@@ -3,24 +3,26 @@
 // Deployment:
 // Maven add commons-csv-1.4, mongodb-driver-3.4.2
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVRecord;
-
+import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.Reader;
+import javax.json.*;
 
 public class Main {
 
     public static void main(String[] args){
         // Parsing this CSV file:
 
-        try {
-            Reader in = new FileReader("src/sample.csv");
-            Iterable<CSVRecord> records = CSVFormat.EXCEL.parse(in);
-            for (CSVRecord record : records) {
-                System.out.println(record.toString());
+        try (BufferedReader br = new BufferedReader(new FileReader("src/sample.csv"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String line2 = line.replaceAll("\"\"([A-Za-z0-9]+)\"\" ", "'$1'")
+                                    .replaceAll("\"\"", "\"")
+                                    .substring(1);
+                line2 = line2.substring(0, line2.length() - 1);
+                System.out.println(line2);
+
             }
-        }catch (Exception e){
+        }catch(Exception e){
 
         }
     }
