@@ -1,32 +1,27 @@
 package Entities;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Created by liuche on 5/5/17.
  */
 public class NodeRelation {
-    String relationship;
-
-    public String getRelationship() {
-        return relationship;
+    String name;
+    @JsonCreator
+    public NodeRelation(@JsonProperty("name") String name){
+        this.name = name;
     }
 
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
+    public String getName() {
+        return name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public String generateQueryString(String table){
+        String query = "insert into " + table + "(name) values(" +
+                "\"" + this.name + "\"" +
+                ");";
+        return query;
 
-        NodeRelation that = (NodeRelation) o;
-
-        return relationship != null ? relationship.equals(that.relationship) : that.relationship == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return relationship != null ? relationship.hashCode() : 0;
     }
 }

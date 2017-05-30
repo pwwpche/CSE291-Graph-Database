@@ -27,18 +27,6 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterStatement(CypherParser.StatementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitStatement(CypherParser.StatementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterSingleQuery(CypherParser.SingleQueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -87,54 +75,6 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReturnBody(CypherParser.ReturnBodyContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReturnBody(CypherParser.ReturnBodyContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterReturnItems(CypherParser.ReturnItemsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReturnItems(CypherParser.ReturnItemsContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterReturnItem(CypherParser.ReturnItemContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReturnItem(CypherParser.ReturnItemContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterWhere(CypherParser.WhereContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitWhere(CypherParser.WhereContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPattern(CypherParser.PatternContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -159,18 +99,6 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterAnonymousPatternPart(CypherParser.AnonymousPatternPartContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitAnonymousPatternPart(CypherParser.AnonymousPatternPartContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPatternElement(CypherParser.PatternElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -183,18 +111,6 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNodePattern(CypherParser.NodePatternContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitNodePattern(CypherParser.NodePatternContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPatternElementChain(CypherParser.PatternElementChainContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -202,6 +118,18 @@ public class CypherBaseListener implements CypherListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitPatternElementChain(CypherParser.PatternElementChainContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterNodePattern(CypherParser.NodePatternContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitNodePattern(CypherParser.NodePatternContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -267,18 +195,6 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterNodeLabel(CypherParser.NodeLabelContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitNodeLabel(CypherParser.NodeLabelContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterRangeLiteral(CypherParser.RangeLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -327,97 +243,85 @@ public class CypherBaseListener implements CypherListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression10(CypherParser.Expression10Context ctx) { }
+	@Override public void enterExp_not(CypherParser.Exp_notContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression10(CypherParser.Expression10Context ctx) { }
+	@Override public void exitExp_not(CypherParser.Exp_notContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression9(CypherParser.Expression9Context ctx) { }
+	@Override public void enterExp_arithmatic(CypherParser.Exp_arithmaticContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression9(CypherParser.Expression9Context ctx) { }
+	@Override public void exitExp_arithmatic(CypherParser.Exp_arithmaticContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression8(CypherParser.Expression8Context ctx) { }
+	@Override public void enterExp_binary(CypherParser.Exp_binaryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression8(CypherParser.Expression8Context ctx) { }
+	@Override public void exitExp_binary(CypherParser.Exp_binaryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression7(CypherParser.Expression7Context ctx) { }
+	@Override public void enterExp_muldiv(CypherParser.Exp_muldivContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression7(CypherParser.Expression7Context ctx) { }
+	@Override public void exitExp_muldiv(CypherParser.Exp_muldivContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression6(CypherParser.Expression6Context ctx) { }
+	@Override public void enterExp_xor(CypherParser.Exp_xorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression6(CypherParser.Expression6Context ctx) { }
+	@Override public void exitExp_xor(CypherParser.Exp_xorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression5(CypherParser.Expression5Context ctx) { }
+	@Override public void enterExp_unary(CypherParser.Exp_unaryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression5(CypherParser.Expression5Context ctx) { }
+	@Override public void exitExp_unary(CypherParser.Exp_unaryContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpression4(CypherParser.Expression4Context ctx) { }
+	@Override public void enterExp_basic(CypherParser.Exp_basicContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpression4(CypherParser.Expression4Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterExpression3(CypherParser.Expression3Context ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitExpression3(CypherParser.Expression3Context ctx) { }
+	@Override public void exitExp_basic(CypherParser.Exp_basicContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -526,18 +430,6 @@ public class CypherBaseListener implements CypherListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParenthesizedExpression(CypherParser.ParenthesizedExpressionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterParameter(CypherParser.ParameterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitParameter(CypherParser.ParameterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

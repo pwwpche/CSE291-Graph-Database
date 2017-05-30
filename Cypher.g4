@@ -1,93 +1,80 @@
 grammar Cypher;
 
-cypher : SP? statement ( SP? ';' )? SP? ;
+cypher :  singleQuery (  ';' )?  ;
 
-statement : singleQuery ;
-
-singleQuery : clause ( SP? clause )* ;
+singleQuery : clause (  clause )* ;
 
 clause : match
        | return1
        ;
 
-match : MATCH SP? pattern ( SP? where )? ;
+match : MATCH  pattern (  WHERE  expression )? ;
 
-return1 : RETURN SP returnBody ;
+return1 : RETURN  ( expression (  ','  expression )* )  ;
 
-returnBody : returnItems  ;
+pattern : patternPart (  ','  patternPart )* ;
 
-returnItems : ( ( SP? ',' SP? returnItem )* )
-            | ( returnItem ( SP? ',' SP? returnItem )* )
+patternPart : ( variable  '='  patternElement )
+            | patternElement
             ;
 
-returnItem : expression
-           ;
-
-where : WHERE SP expression ;
-
-pattern : patternPart ( SP? ',' SP? patternPart )* ;
-
-patternPart : ( variable SP? '=' SP? anonymousPatternPart )
-            | anonymousPatternPart
-            ;
-
-anonymousPatternPart : patternElement ;
-
-patternElement : ( nodePattern ( SP? patternElementChain )* )
+patternElement : ( nodePattern (  patternElementChain )* )
                | ( '(' patternElement ')' )
                ;
 
-nodePattern : '(' SP? ( variable SP? )? ( nodeLabels SP? )? ( properties SP? )? ')' ;
+patternElementChain : relationshipPattern  nodePattern ;
 
-patternElementChain : relationshipPattern SP? nodePattern ;
+nodePattern : '('  ( variable  )? ( nodeLabels  )? ( properties  )? ')' ;
 
-relationshipPattern : ( leftArrowHead SP? dash SP? relationshipDetail? SP? dash SP? rightArrowHead )
-                    | ( leftArrowHead SP? dash SP? relationshipDetail? SP? dash )
-                    | ( dash SP? relationshipDetail? SP? dash SP? rightArrowHead )
-                    | ( dash SP? relationshipDetail? SP? dash )
+relationshipPattern : ( leftArrowHead  dash  relationshipDetail?  dash  rightArrowHead )
+                    | ( leftArrowHead  dash  relationshipDetail?  dash )
+                    | ( dash  relationshipDetail?  dash  rightArrowHead )
+                    | ( dash  relationshipDetail?  dash )
                     ;
 
-relationshipDetail : '[' SP? ( variable SP? )? ( relationshipTypes SP? )? rangeLiteral? ( properties SP? )? ']' ;
+relationshipDetail : '['  ( variable  )? ( relationshipTypes  )? rangeLiteral? ( properties  )? ']' ;
 
 properties : mapLiteral
-           | parameter
            ;
 
-relationshipTypes : ':' SP? relTypeName ( SP? '|' ':'? SP? relTypeName )* ;
+relationshipTypes : ':'  relTypeName (  '|' ':'?  relTypeName )* ;
 
-nodeLabels : nodeLabel ( SP? nodeLabel )* ;
+nodeLabels : (':'  labelName) (  ':'  labelName )* ;
 
-nodeLabel : ':' SP? labelName ;
-
-rangeLiteral : '*' SP? ( integerLiteral SP? )? ( '..' SP? ( integerLiteral SP? )? )? ;
+rangeLiteral : '*'  ( integerLiteral  )? ( '..'  ( integerLiteral  )? )? ;
 
 labelName : symbolicName ;
 
 relTypeName : symbolicName ;
 
-expression : expression10 ;
+expression : exp_not (  AND  exp_not )* ;
 
-expression10 : exp_not ( SP AND SP exp_not )* ;
 
-exp_not : ( NOT SP? )* exp_arithmatic ;
+//exp_not : ( NOT  )* exp_arithmatic ;
+exp_not : ( NOT  )? exp_arithmatic ;
 
-exp_arithmatic : exp_binary ( SP? partialComparisonExpression )* ;
 
-exp_binary : exp_addsub ( ( SP? '+' SP? exp_addsub ) | ( SP? '-' SP? exp_addsub ) )* ;
+//exp_arithmatic : exp_binary (  partialComparisonExpression )* ;
+exp_arithmatic : exp_binary (  partialComparisonExpression )? ;
 
-exp_addsub : exp_muldivmod ( ( SP? '*' SP? exp_muldivmod ) | ( SP? '/' SP? exp_muldivmod ) | ( SP? '%' SP? exp_muldivmod ) )* ;
+exp_binary : exp_muldiv ( (  '+'  exp_muldiv ) | (  '-'  exp_muldiv ) )* ;
 
-exp_muldivmod : exp_xor ( SP? '^' SP? exp_xor )* ;
+exp_muldiv : exp_xor ( (  '*'  exp_xor ) | (  '/'  exp_xor ) | (  '%'  exp_xor ) )* ;
 
-exp_xor : ( ( '+' | '-' ) SP? )* exp_unary ;
+exp_xor : exp_unary (  '^'  exp_unary )* ;
 
-exp_unary : expression2 ( ( SP? '[' expression ']' ) | ( SP? '[' expression? '..' expression? ']' ) );
+exp_unary : ( ( '+' | '-' )  )* exp_basic ;
 
-expression2 : atom ( SP? ( propertyLookup | nodeLabels ) )* ;
+
+// Remove nested array visit. Only support list visiting for constants.
+//exp_basic : expression2 ( (  '[' expression ']' ) | (  '[' expression? '..' expression? ']' ) )*;
+exp_basic : expression2 ( (  '[' expression ']' ) | (  '[' expression? '..' expression? ']' ) )?;
+
+
+expression2 : atom (  nodeLabels | propertyLookup )? ;
 
 atom : literal
-     | parameter
-     | ( COUNT SP? '(' SP? '*' SP? ')' )
+     | ( COUNT  '('  '*'  ')' )
      | relationshipsPattern
      | parenthesizedExpression
      | variable
@@ -112,26 +99,24 @@ booleanLiteral : TRUE
                | FALSE
                ;
 
-listLiteral : '[' SP? ( expression SP? ( ',' SP? expression SP? )* )? ']' ;
+listLiteral : '['  ( expression  ( ','  expression  )* )? ']' ;
 
-mapLiteral : '{' SP? ( propertyKeyName SP? ':' SP? expression SP? ( ',' SP? propertyKeyName SP? ':' SP? expression SP? )* )? '}' ;
+mapLiteral : '{'  ( propertyKeyName  ':'  expression  ( ','  propertyKeyName  ':'  expression  )* )? '}' ;
 
-partialComparisonExpression : ( '=' SP? exp_binary )
-                            | ( '<>' SP? exp_binary )
-                            | ( '!=' SP? exp_binary )
-                            | ( '<' SP? exp_binary )
-                            | ( '>' SP? exp_binary )
-                            | ( '<=' SP? exp_binary )
-                            | ( '>=' SP? exp_binary )
+partialComparisonExpression : ( '='  exp_binary )
+                            | ( '<>'  exp_binary )
+                            | ( '!='  exp_binary )
+                            | ( '<'  exp_binary )
+                            | ( '>'  exp_binary )
+                            | ( '<='  exp_binary )
+                            | ( '>='  exp_binary )
                             ;
 
-parenthesizedExpression : '(' SP? expression SP? ')' ;
+parenthesizedExpression : '('  expression  ')' ;
 
-parameter : '$' ( symbolicName | DecimalInteger ) ;
+relationshipsPattern : nodePattern (  patternElementChain )+ ;
 
-relationshipsPattern : nodePattern ( SP? patternElementChain )+ ;
-
-propertyLookup : '.' SP? ( propertyKeyName ) ;
+propertyLookup : '.'  ( propertyKeyName ) ;
 
 propertyKeyName : symbolicName ;
 
@@ -178,7 +163,6 @@ symbolicName : UnescapedSymbolicName
              | MATCH
              | RETURN
              | WHERE
-             | OR
              | AND
              | NOT
              | TRUE
@@ -187,8 +171,6 @@ symbolicName : UnescapedSymbolicName
 COUNT : ( 'C' | 'c' ) ( 'O' | 'o' ) ( 'U' | 'u' ) ( 'N' | 'n' ) ( 'T' | 't' )  ;
 
 NULL : ( 'N' | 'n' ) ( 'U' | 'u' ) ( 'L' | 'l' ) ( 'L' | 'l' )  ;
-
-OR : ( 'O' | 'o' ) ( 'R' | 'r' )  ;
 
 MATCH : ( 'M' | 'm' ) ( 'A' | 'a' ) ( 'T' | 't' ) ( 'C' | 'c' ) ( 'H' | 'h' )  ;
 
@@ -235,7 +217,7 @@ IdentifierPart : ID_Continue
 /**
  * Any character except "`", enclosed within `backticks`. Backticks are escaped with double backticks. */
 
-SP : ( WHITESPACE )+ ;
+SP : ( WHITESPACE )+ -> skip;
 
 WHITESPACE : SPACE
            | TAB
@@ -272,6 +254,8 @@ WHITESPACE : SPACE
 Comment : ( '/*' ( Comment_1 | ( '*' Comment_2 ) )* '*/' )
         | ( '//' ( Comment_3 )* CR? ( LF | EOF ) )
         ;
+
+
 
 leftArrowHead : '<'
           ;

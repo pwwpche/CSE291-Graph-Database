@@ -16,12 +16,6 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCypher(CypherParser.CypherContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#statement}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStatement(CypherParser.StatementContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CypherParser#singleQuery}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -46,30 +40,6 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitReturn1(CypherParser.Return1Context ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#returnBody}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitReturnBody(CypherParser.ReturnBodyContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CypherParser#returnItems}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitReturnItems(CypherParser.ReturnItemsContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CypherParser#returnItem}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitReturnItem(CypherParser.ReturnItemContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CypherParser#where}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitWhere(CypherParser.WhereContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CypherParser#pattern}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -82,29 +52,23 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPatternPart(CypherParser.PatternPartContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#anonymousPatternPart}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAnonymousPatternPart(CypherParser.AnonymousPatternPartContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CypherParser#patternElement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitPatternElement(CypherParser.PatternElementContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#nodePattern}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNodePattern(CypherParser.NodePatternContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CypherParser#patternElementChain}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitPatternElementChain(CypherParser.PatternElementChainContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link CypherParser#nodePattern}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNodePattern(CypherParser.NodePatternContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CypherParser#relationshipPattern}.
 	 * @param ctx the parse tree
@@ -136,12 +100,6 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitNodeLabels(CypherParser.NodeLabelsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#nodeLabel}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitNodeLabel(CypherParser.NodeLabelContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CypherParser#rangeLiteral}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -166,53 +124,47 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitExpression(CypherParser.ExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression10}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_not}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression10(CypherParser.Expression10Context ctx);
+	T visitExp_not(CypherParser.Exp_notContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression9}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_arithmatic}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression9(CypherParser.Expression9Context ctx);
+	T visitExp_arithmatic(CypherParser.Exp_arithmaticContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression8}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_binary}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression8(CypherParser.Expression8Context ctx);
+	T visitExp_binary(CypherParser.Exp_binaryContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression7}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_muldiv}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression7(CypherParser.Expression7Context ctx);
+	T visitExp_muldiv(CypherParser.Exp_muldivContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression6}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_xor}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression6(CypherParser.Expression6Context ctx);
+	T visitExp_xor(CypherParser.Exp_xorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression5}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_unary}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression5(CypherParser.Expression5Context ctx);
+	T visitExp_unary(CypherParser.Exp_unaryContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression4}.
+	 * Visit a parse tree produced by {@link CypherParser#exp_basic}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpression4(CypherParser.Expression4Context ctx);
-	/**
-	 * Visit a parse tree produced by {@link CypherParser#expression3}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExpression3(CypherParser.Expression3Context ctx);
+	T visitExp_basic(CypherParser.Exp_basicContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CypherParser#expression2}.
 	 * @param ctx the parse tree
@@ -267,12 +219,6 @@ public interface CypherVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitParenthesizedExpression(CypherParser.ParenthesizedExpressionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CypherParser#parameter}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitParameter(CypherParser.ParameterContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CypherParser#relationshipsPattern}.
 	 * @param ctx the parse tree
