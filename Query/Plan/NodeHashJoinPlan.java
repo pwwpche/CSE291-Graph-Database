@@ -1,6 +1,7 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
 import Utility.Equality;
 
 import java.util.ArrayList;

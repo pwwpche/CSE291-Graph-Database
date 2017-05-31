@@ -1,7 +1,8 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
-import Query.RelationEdge;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
+import Query.Entities.RelationEdge;
 import Utility.Constraint;
 import Utility.QueryConstraints;
 
@@ -75,6 +76,7 @@ public class ExpandAllPlan extends Plan {
     public void applyTo(PlanTable table) {
         table.relations.add(edge.name);
         table.nodes.add(toNode);
+        table.cost += this.estimatedSize;
         table.estimatedSize = estimatedSize;
         table.plans.add(this);
         super.applyTo(table);

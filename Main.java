@@ -4,7 +4,7 @@
 // Maven add commons-csv-1.4, mongodb-driver-3.4.2
 
 import Entities.NodeRecord;
-import Query.QueryIndexer;
+import Query.Engine.QueryIndexer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.ANTLRFileStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,6 +18,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import org.apache.ibatis.jdbc.ScriptRunner;
 
+
+/*  Graph"
+    Sampling, paralleling, condensing, overlapping(DP)
+*
+* */
 public class Main {
 
     public static void main(String[] args) throws IOException {

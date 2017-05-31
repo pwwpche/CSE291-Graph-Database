@@ -1,1 +1,1 @@
-match (n)-[r1]-(m {name : "Movie0"}), (p:Movie)<-[r2]-(q) where q = n return n, r1,r2, p, q
+match (a)-->(r)-->(c) , (e)-->(r)-->(f) return a,b,e,f

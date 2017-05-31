@@ -1,9 +1,12 @@
-package Query;
+package Query.Engine;
 
+import Query.Entities.PlanTable;
 import Query.Plan.*;
+import Query.Entities.RelationEdge;
 import Utility.*;
 
 import java.util.*;
+import java.util.logging.Filter;
 
 /**
  * Created by liuche on 5/28/17.
@@ -119,19 +122,21 @@ public class QueryPlanner {
             if(candidates.isEmpty()){
                 break;
             }
+
+            // TODO: Add cost calculation to each plan.
             double bestEstimate = Double.MAX_VALUE;
             int index = -1;
             for(int i = 0 , size = candidates.size() ; i < size ; i++){
-                if(candidates.get(i).estimatedSize < bestEstimate){
-                    bestEstimate = candidates.get(i).estimatedSize;
+                if(candidates.get(i).cost < bestEstimate){
+                    bestEstimate = candidates.get(i).cost;
                     index = i;
                 }
             }
+            assert index != -1;
             PlanTable best = candidates.get(index);
+
+
             planTables.removeIf(table -> covers(best, table));
-
-            // TODO:Apply additional filter operations, and remove used constraints.
-
 
             planTables.add(best);
             removeRelated(best.plans.get(best.plans.size() - 1));
@@ -152,9 +157,32 @@ public class QueryPlanner {
                     edge.used = true;
                 }
             }
-        }else if(plan instanceof NodeHashJoinPlan){
+        }else if(plan instanceof NodeHashJoinPlan ||
+                plan instanceof FilterRelationEqualityPlan){
             equalityList.removeAll(((NodeHashJoinPlan) plan).getEquality());
         }
+
+    }
+
+    private PlanTable addAdditionalFilter(PlanTable table){
+        // Apply additional filter operations on the table.
+        List<Equality> relationEquality = new ArrayList<>();
+        for(Equality equality : equalityList){
+            // Filter of relation.
+            if(!nodes.contains(equality.var1)){
+                if(table.relations.contains(equality.var1) && table.relations.contains(equality.var2)){
+                    relationEquality.add(equality);
+                }
+            }
+        }
+
+        if(!relationEquality.isEmpty()){
+            PlanTable newTable = new PlanTable(table);
+            FilterRelationEqualityPlan plan = new FilterRelationEqualityPlan(indexer, relationEquality, newTable);
+            plan.applyTo(newTable);
+            table = newTable;
+        }
+        return table;
     }
 
     private List<Equality> getRelatedEqualities(PlanTable t1, PlanTable t2){
@@ -179,8 +207,8 @@ public class QueryPlanner {
                 }
 
             }
-
         }
+
         return result;
     }
 
@@ -191,20 +219,23 @@ public class QueryPlanner {
         Set<String> tt1 = new HashSet<>(t1.nodes);
         tt1.retainAll(t2.nodes);
         canHashJoin = canHashJoin || (!tt1.isEmpty());
+        PlanTable newTable;
         if(canHashJoin){
             // Add NodeHashJoin product
             NodeHashJoinPlan plan = new NodeHashJoinPlan(indexer, t1, t2, equalities);
-            PlanTable newTable = new PlanTable(t2);
+            newTable = new PlanTable(t2);
             plan.applyTo(newTable);
-            candidates.add(newTable);
 
         }else{
             // Add Cartesian Product
             CartesianProductPlan plan = new CartesianProductPlan(indexer, t1, t2);
-            PlanTable newTable = new PlanTable(t2);
+            newTable = new PlanTable(t2);
             plan.applyTo(newTable);
-            candidates.add(newTable);
         }
+
+        newTable = addAdditionalFilter(newTable);
+        candidates.add(newTable);
+
     }
 
     private void constructExpand(PlanTable table){
@@ -212,21 +243,25 @@ public class QueryPlanner {
             if(edge.used){
                 continue;
             }
+            PlanTable newTable;
             if(table.nodes.contains(edge.start) && table.nodes.contains(edge.end)){
                 ExpandIntoPlan plan = new ExpandIntoPlan(indexer,edge,
                         varToConstraint.get(edge.name),
                         table);
-                PlanTable newTable = new PlanTable(table);
+                newTable = new PlanTable(table);
                 plan.applyTo(newTable);
+                newTable = addAdditionalFilter(newTable);
                 candidates.add(newTable);
             }else if(table.nodes.contains(edge.start) || table.nodes.contains(edge.end)){
                 String relation = edge.name;
                 ExpandAllPlan plan = new ExpandAllPlan(indexer, edge,
                         varToConstraint.get(relation), table);
-                PlanTable newTable = new PlanTable(table);
+                newTable = new PlanTable(table);
                 plan.applyTo(newTable);
+                newTable = addAdditionalFilter(newTable);
                 candidates.add(newTable);
             }
+
         }
     }
 

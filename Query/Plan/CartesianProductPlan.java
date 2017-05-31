@@ -1,6 +1,7 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
 
 /**
  * Created by liuche on 5/29/17.
@@ -23,6 +24,7 @@ public class CartesianProductPlan extends Plan {
         table.estimatedSize = this.estimatedSize;
         table.plans.addAll(from.plans);
         table.plans.add(this);
+        table.cost += this.estimatedSize;
         super.applyTo(table);
     }
 

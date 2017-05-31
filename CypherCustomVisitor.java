@@ -1,5 +1,5 @@
-import Query.QueryIndexer;
-import Query.QueryPlanner;
+import Query.Engine.QueryIndexer;
+import Query.Engine.QueryPlanner;
 import Utility.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -247,6 +247,7 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         if(ctx.relationshipDetail() == null){
             String key = "anonRelation" + anonRelation.toString();
             anonRelation++;
+            varToConstraint.put(key, new QueryConstraints());
             return new Value(key, true, "String");
         }
         return this.visit(ctx.relationshipDetail());
@@ -258,7 +259,6 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         QueryConstraints constraints = new QueryConstraints();
         String key;
         if (ctx.variable() != null) {
-
             key = ctx.variable().getText();
         } else {
             key = "anonRelation" + anonRelation.toString();

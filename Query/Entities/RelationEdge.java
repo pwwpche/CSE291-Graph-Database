@@ -1,4 +1,4 @@
-package Query;
+package Query.Entities;
 
 /**
  * Created by liuche on 5/30/17.
@@ -6,7 +6,7 @@ package Query;
  public class RelationEdge{
     public String name, start, end, direction;
     public boolean used;
-    RelationEdge(String name, String start, String end, String direction){
+    public RelationEdge(String name, String start, String end, String direction){
         this.name = name;
         this.start = start;
         this.end = end;

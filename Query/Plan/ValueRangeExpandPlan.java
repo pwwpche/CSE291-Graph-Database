@@ -1,15 +1,14 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
-import Utility.Equality;
-
-import java.util.List;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
 
 /**
- * Created by liuche on 5/29/17.
+ * Created by liuche on 5/30/17.
  */
-public class FilterRelationEquality extends Plan {
-    public FilterRelationEquality(QueryIndexer queryIndexer, List<Equality> equalityList) {
+public class ValueRangeExpandPlan extends Plan {
+
+    public ValueRangeExpandPlan(QueryIndexer queryIndexer) {
         super(queryIndexer);
     }
 

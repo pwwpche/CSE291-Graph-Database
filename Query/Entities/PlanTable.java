@@ -1,4 +1,6 @@
-package Query.Plan;
+package Query.Entities;
+
+import Query.Plan.Plan;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -13,12 +15,14 @@ public class PlanTable {
     public List<Plan> plans = new ArrayList<>();
     public Set<String> relations = new HashSet<>();
     public double estimatedSize = 0;
+    public double cost = 0;
 
     public PlanTable(){
         nodes = new HashSet<>();
         plans = new ArrayList<>();
         relations = new HashSet<>();
         estimatedSize = 0;
+        cost = 0;
     }
 
     public PlanTable(PlanTable table){
@@ -27,5 +31,6 @@ public class PlanTable {
         this.plans.addAll(table.plans);
         this.relations.addAll(table.relations);
         this.estimatedSize = table.estimatedSize;
+        this.cost = table.cost;
     }
 }

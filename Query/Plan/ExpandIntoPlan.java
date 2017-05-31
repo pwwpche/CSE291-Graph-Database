@@ -1,7 +1,8 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
-import Query.RelationEdge;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
+import Query.Entities.RelationEdge;
 import Utility.Constraint;
 import Utility.QueryConstraints;
 
@@ -18,30 +19,61 @@ public class ExpandIntoPlan extends Plan {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
-        double validEdges = Integer.MAX_VALUE;
-        // TODO: Improve size estimation of edge expansion
-        for(Constraint constraint : constraints.getConstraints()){
-            if(constraint.name.equals("rel_type")){
-                assert constraint.value.type.contains("List");
-                List<String> types = (List<String>) constraint.value.val;
-                if(validEdges == Integer.MAX_VALUE){
+        double validEdges = Double.MAX_VALUE;
+
+        // Size estimation for (a:A:B)-[]->()
+        for(Plan plan : table.plans){
+            if(plan instanceof ScanByLabelPlan){
+                if(validEdges == Double.MAX_VALUE){
                     validEdges = 0;
                 }
-                for(String type : types){
-                    validEdges += indexer.getRelationsWithLabel(type);
+                if(((ScanByLabelPlan) plan).variable.equals(edge.start)){
+                    List<String> labels = ((ScanByLabelPlan) plan).labels;
+                    for(String label : labels){
+                        int outingEdge = indexer.getOutgoingOfLabel(label);
+                        validEdges = validEdges > outingEdge ? outingEdge : validEdges;
+                    }
                 }
+
             }
-            //TODO: Relation with string property is not implemented.
         }
-        if(validEdges !=  Integer.MAX_VALUE){
-            this.estimatedSize = (int)(this.estimatedSize * 1.0 * (validEdges * 1.0 / indexer.getNumberOfRelations()));
+        if(validEdges != Double.MAX_VALUE){
+            double edgeRatio = validEdges * 1.0 / indexer.getNumberOfNode();
+            this.estimatedSize = (int)(this.estimatedSize * 1.0 * edgeRatio);
         }
+
+        // Size estimation for (a)-[r:R1|R2]->()
+        if(validEdges == Double.MAX_VALUE){
+            // TODO: Improve size estimation of edge expansion
+            for(Constraint constraint : constraints.getConstraints()){
+                if(constraint.name.equals("rel_type")){
+                    assert constraint.value.type.contains("List");
+                    List<String> types = (List<String>) constraint.value.val;
+                    if(validEdges == Double.MAX_VALUE){
+                        validEdges = 0;
+                    }
+                    for(String type : types){
+                        validEdges += indexer.getRelationsWithLabel(type);
+                    }
+                }
+                //TODO: Relation with string property is not implemented.
+            }
+            if(validEdges !=  Double.MAX_VALUE){
+                double edgeRatio = validEdges * 1.0 / indexer.getNumberOfRelations();
+                this.estimatedSize = (int)(this.estimatedSize * 1.0 * edgeRatio);
+            }
+
+        }
+
+
+
     }
 
     @Override
     public void applyTo(PlanTable table) {
         table.relations.add(edge.name);
-        table.estimatedSize = estimatedSize;
+        table.cost += table.estimatedSize;
+        table.estimatedSize = this.estimatedSize;
         table.plans.add(this);
         super.applyTo(table);
     }

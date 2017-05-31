@@ -1,4 +1,4 @@
-package Query;
+package Query.Engine;
 
 import Entities.Person;
 

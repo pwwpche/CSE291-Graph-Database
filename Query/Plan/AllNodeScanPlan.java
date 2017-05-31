@@ -1,6 +1,7 @@
 package Query.Plan;
 
-import Query.QueryIndexer;
+import Query.Engine.QueryIndexer;
+import Query.Entities.PlanTable;
 
 /**
  * Created by liuche on 5/29/17.
@@ -17,6 +18,7 @@ public class AllNodeScanPlan extends Plan {
     public void applyTo(PlanTable table){
         table.nodes.add(variable);
         table.estimatedSize = estimatedSize;
+        table.cost += this.estimatedSize;
         table.plans.add(this);
     }
 
