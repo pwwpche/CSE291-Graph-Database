@@ -9,9 +9,10 @@ import java.util.List;
 
 /**
  * Created by liuche on 5/29/17.
+ *
  */
 public class    FilterConstraintPlan extends Plan {
-    Constraint varConstraint;
+    private Constraint varConstraint;
 
     public FilterConstraintPlan(QueryIndexer queryIndexer, String var, Constraint constraint,PlanTable table) {
         super(queryIndexer);
@@ -20,9 +21,10 @@ public class    FilterConstraintPlan extends Plan {
         estimatedSize = table.estimatedSize;
         switch (constraint.name){
             case "nodeLabels":
-                List<String> labels = ((List<String>)constraint.value);
+                assert constraint.value.type.contains("List");
+                List<String> labels = (List<String>)(constraint.value.val);
                 for(String label : labels){
-                    estimatedSize /= queryIndexer.getNodesWithLabel(label);
+                    estimatedSize = estimatedSize * (queryIndexer.getNodesWithLabel(label) * 1.0 / queryIndexer.getNumberOfNode());
                 }
                 break;
             case "id":
@@ -32,9 +34,12 @@ public class    FilterConstraintPlan extends Plan {
                 Value val = constraint.value;
                 //TODO: Add supply for other equality types.
                 assert val.type.equals("String");
-                assert constraint.equality.equals("==");
-                String property = constraint.name;
-                this.estimatedSize /= indexer.getNodesWithProperty(property);
+
+                if(constraint.equality.equals("==")){
+                    String property = constraint.name;
+                    this.estimatedSize /= indexer.getNodesWithProperty(property) ;
+                }
+
                 break;
         }
 
@@ -42,6 +47,7 @@ public class    FilterConstraintPlan extends Plan {
 
     @Override
     public void applyTo(PlanTable table) {
+        table.cost += table.estimatedSize;
         table.estimatedSize = estimatedSize;
         table.plans.add(this);
     }
@@ -53,6 +59,6 @@ public class    FilterConstraintPlan extends Plan {
 
     @Override
     public String getName() {
-        return "FilterConstraintPlan";
+        return "FilterConstraint";
     }
 }

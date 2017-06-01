@@ -1,1 +1,2 @@
-match (a)-->(r)-->(c) , (e)-->(r)-->(f) return a,b,e,f
+match (a)-[r1:ACTS_IN]->(m)-->(c) , (e)-->(m:Person)-->(f)
+where a.name = f.name AND c.name = "Movie2" return a,b,e,f

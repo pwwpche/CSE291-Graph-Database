@@ -55,7 +55,7 @@ public class NodeHashJoinPlan extends Plan {
 
     @Override
     public String getName() {
-        return "NodeHashJoinPlan";
+        return "NodeHashJoin";
     }
 
     public List<Equality> getEquality(){

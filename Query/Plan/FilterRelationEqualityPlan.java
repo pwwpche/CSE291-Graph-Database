@@ -32,6 +32,7 @@ public class FilterRelationEqualityPlan extends Plan {
     public void applyTo(PlanTable table) {
         table.cost += table.estimatedSize * eqList.size();
         table.estimatedSize = this.estimatedSize;
+        table.plans.add(this);
         super.applyTo(table);
     }
 
@@ -39,7 +40,7 @@ public class FilterRelationEqualityPlan extends Plan {
     public String getParams() {
         List<String> strings = new ArrayList<>();
         eqList.forEach(equality -> strings.add(equality.toString()));
-        return String.join(" AND ");
+        return String.join(" AND ", strings);
     }
 
     @Override
@@ -49,6 +50,10 @@ public class FilterRelationEqualityPlan extends Plan {
 
     @Override
     public String getName() {
-        return "FilterRelationEqualityPlan";
+        return "FilterRelationEquality";
+    }
+
+    public List<Equality> getEquality(){
+        return this.eqList;
     }
 }

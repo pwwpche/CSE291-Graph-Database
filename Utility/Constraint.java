@@ -19,7 +19,7 @@ public class Constraint {
 
     public Constraint(String name, Value value){
         this.name = name;
-        this.equality = "=";
+        this.equality = "==";
         this.value = value;
     }
 

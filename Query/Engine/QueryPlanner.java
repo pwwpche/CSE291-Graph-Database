@@ -21,7 +21,7 @@ public class QueryPlanner {
     private QueryIndexer indexer;
     private List<PlanTable> planTables = new ArrayList<>();
 
-    private List<String> nodes = new ArrayList<>();
+    private Set<String> nodes = new HashSet<>();
     private List<RelationEdge> edges = new ArrayList<>();
 
     public QueryPlanner(Map<String, QueryConstraints> varToConstraint,
@@ -64,9 +64,27 @@ public class QueryPlanner {
                 //TODO: Change this to selecting the optimal plan.
                 // Just pick the first and use others as filters.
                 QueryConstraints constraints = varToConstraint.get(node);
-                Constraint constraint = constraints.getConstraints().get(0);
+                List<Constraint> constraintsList = new ArrayList<>();
+                for(Constraint constraint : constraints.getConstraints()){
+                    if(constraint.name.contains("id")){
+                        constraintsList.add(constraint);
+                    }
+                }
+                for(Constraint constraint : constraints.getConstraints()){
+                    if(constraint.name.contains("nodeLabels")){
+                        constraintsList.add(constraint);
+                    }
+                }
+                for(Constraint constraint : constraints.getConstraints()){
+                    if(!constraint.name.contains("id") && !constraint.name.contains("nodeLabels")){
+                        constraintsList.add(constraint);
+                    }
+                }
+                Constraint constraint = constraintsList.get(0);
+
                 switch (constraint.name) {
                     case "nodeLabels":
+                        assert constraint.value.type.contains("List");
                         List<String> labels = ((List<String>) constraint.value.val);
                         ScanByLabelPlan scanByLabelPlan = new ScanByLabelPlan(indexer, node, labels);
                         scanByLabelPlan.applyTo(table);
@@ -87,8 +105,8 @@ public class QueryPlanner {
                         break;
                 }
 
-                for (int i = 1, size = constraints.getConstraints().size(); i < size; i++) {
-                    Constraint cons = constraints.getConstraints().get(i);
+                for (int i = 1, size = constraintsList.size(); i < size; i++) {
+                    Constraint cons = constraintsList.get(i);
                     FilterConstraintPlan filterConstraintPlan = new FilterConstraintPlan(indexer, node, cons, table);
                     filterConstraintPlan.applyTo(table);
                 }
@@ -102,7 +120,7 @@ public class QueryPlanner {
 
     private List<PlanTable> candidates = new ArrayList<>();
     public void plan() {
-
+        System.out.println("Generating Plan...");
         init();
 
         // Find start point
@@ -139,7 +157,11 @@ public class QueryPlanner {
             planTables.removeIf(table -> covers(best, table));
 
             planTables.add(best);
-            removeRelated(best.plans.get(best.plans.size() - 1));
+
+            for(Plan plan : best.plans){
+                removeRelated(plan);
+            }
+
 
 
         }while(candidates.size() > 0);
@@ -153,13 +175,30 @@ public class QueryPlanner {
     private void removeRelated(Plan plan){
         if(plan instanceof ExpandAllPlan || plan instanceof ExpandIntoPlan){
             for(RelationEdge edge : edges){
-                if(edge.name.equals(plan.getParams())){
-                    edge.used = true;
+                if(plan instanceof ExpandAllPlan){
+                    String name = ((ExpandAllPlan) plan).getRelationEdge().name;
+                    if(edge.name.equals(name)){
+                        edge.used = true;
+                        break;
+                    }
+                }
+
+                if(plan instanceof ExpandIntoPlan){
+                    String name = ((ExpandIntoPlan) plan).getRelationEdge().name;
+                    if(edge.name.equals(name)){
+                        edge.used = true;
+                        break;
+                    }
                 }
             }
         }else if(plan instanceof NodeHashJoinPlan ||
                 plan instanceof FilterRelationEqualityPlan){
-            equalityList.removeAll(((NodeHashJoinPlan) plan).getEquality());
+            if(plan instanceof NodeHashJoinPlan){
+                equalityList.removeAll(((NodeHashJoinPlan) plan).getEquality());
+            }else{
+                equalityList.removeAll(((FilterRelationEqualityPlan) plan).getEquality());
+            }
+
         }
 
     }
@@ -245,8 +284,9 @@ public class QueryPlanner {
             }
             PlanTable newTable;
             if(table.nodes.contains(edge.start) && table.nodes.contains(edge.end)){
+                QueryConstraints constraints = varToConstraint.get(edge.name);
                 ExpandIntoPlan plan = new ExpandIntoPlan(indexer,edge,
-                        varToConstraint.get(edge.name),
+                        constraints,
                         table);
                 newTable = new PlanTable(table);
                 plan.applyTo(newTable);
@@ -259,6 +299,13 @@ public class QueryPlanner {
                 newTable = new PlanTable(table);
                 plan.applyTo(newTable);
                 newTable = addAdditionalFilter(newTable);
+                String addedNode = plan.getExpandedNode();
+                if(varToConstraint.get(addedNode).getConstraints().size() > 0){
+                    for(Constraint constraint : varToConstraint.get(addedNode).getConstraints()){
+                        FilterConstraintPlan plan1 = new FilterConstraintPlan(indexer, addedNode, constraint, newTable);
+                        plan1.applyTo(newTable);
+                    }
+                }
                 candidates.add(newTable);
             }
 

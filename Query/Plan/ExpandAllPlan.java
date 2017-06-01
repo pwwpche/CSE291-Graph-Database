@@ -13,9 +13,9 @@ import java.util.List;
  * Created by liuche on 5/29/17.
  */
 public class ExpandAllPlan extends Plan {
-    RelationEdge edge;
-    String fromNode;
-    String toNode;
+    private RelationEdge edge;
+    private String fromNode;
+    private String toNode;
     public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
@@ -84,7 +84,7 @@ public class ExpandAllPlan extends Plan {
 
     @Override
     public String getParams() {
-        return edge.name;
+        return "-[" + edge.name + "]-(" + toNode + ")";
     }
 
     @Override
@@ -94,10 +94,14 @@ public class ExpandAllPlan extends Plan {
 
     @Override
     public String getName() {
-        return "ExpandAllPlan";
+        return "ExpandAll";
     }
 
     public RelationEdge getRelationEdge(){
         return this.edge;
+    }
+
+    public String getExpandedNode(){
+        return toNode;
     }
 }

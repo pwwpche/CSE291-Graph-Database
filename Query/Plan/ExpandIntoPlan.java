@@ -80,7 +80,7 @@ public class ExpandIntoPlan extends Plan {
 
     @Override
     public String getParams() {
-        return edge.name;
+        return "-[" + edge.name + "]-(" + edge.end + ")";
     }
 
     @Override
@@ -90,7 +90,7 @@ public class ExpandIntoPlan extends Plan {
 
     @Override
     public String getName() {
-        return "ExpandIntoPlan";
+        return "ExpandInto";
     }
 
     public RelationEdge getRelationEdge(){

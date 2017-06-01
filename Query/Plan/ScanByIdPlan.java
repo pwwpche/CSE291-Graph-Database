@@ -30,6 +30,6 @@ public class ScanByIdPlan extends Plan {
 
     @Override
     public String getName() {
-        return "ScanByIdPlan";
+        return "ScanById";
     }
 }

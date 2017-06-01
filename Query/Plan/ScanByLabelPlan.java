@@ -11,7 +11,6 @@ import java.util.List;
  */
 public class ScanByLabelPlan extends Plan {
     List<String> labels = new ArrayList<>();
-    String variable;
     public ScanByLabelPlan(QueryIndexer queryIndexer, String node, List<String> labels) {
         super(queryIndexer);
         this.variable = node;
@@ -37,6 +36,10 @@ public class ScanByLabelPlan extends Plan {
         return res;
     }
 
+    @Override
+    public String getVariable(){
+        return super.getVariable();
+    }
 
     @Override
     public String getName() {

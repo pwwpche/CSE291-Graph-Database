@@ -31,6 +31,6 @@ public class ScanByPropertyPlan extends Plan {
 
     @Override
     public String getName() {
-        return "ScanByPropertyPlan";
+        return "ScanByProperty";
     }
 }
