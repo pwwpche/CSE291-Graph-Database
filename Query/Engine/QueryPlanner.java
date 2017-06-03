@@ -18,6 +18,7 @@ public class QueryPlanner {
     private Map<String, QueryConstraints> varToConstraint = new HashMap<>();
     private List<Equality> equalityList = new ArrayList<>();
     private List<Pair<String, String>> retList = new ArrayList<>();
+    private Map<String, Value> retPath = new HashMap<>();
     private QueryIndexer indexer;
     private List<PlanTable> planTables = new ArrayList<>();
 
@@ -28,6 +29,7 @@ public class QueryPlanner {
                         List<Equality> equalityList,
                         List<Path> pathList,
                         List<Pair<String, String>> retList,
+                        Map<String, Value> retPath,
                         QueryIndexer indexer) {
         // Get node list and relation list
         this.varToConstraint = varToConstraint;
@@ -118,6 +120,10 @@ public class QueryPlanner {
         }
     }
 
+    private void processRetrurn(PlanTable bestTable){
+        //TODO; Extract return variables.
+    }
+
     private List<PlanTable> candidates = new ArrayList<>();
     public void plan() {
         System.out.println("Generating Plan...");
@@ -166,10 +172,17 @@ public class QueryPlanner {
 
         }while(candidates.size() > 0);
         assert planTables.size() == 1;
+
+        // TODO: Process return list
+
+
         PlanTable bestPlan = planTables.get(0);
         for(Plan plan : bestPlan.plans){
             System.out.println(plan.getName() + "|" + plan.getVariable() + "|" + plan.getParams());
         }
+
+
+
     }
 
     private void removeRelated(Plan plan){
@@ -282,24 +295,51 @@ public class QueryPlanner {
             if(edge.used){
                 continue;
             }
-            PlanTable newTable;
+            PlanTable newTable = new PlanTable(table);
+
+            boolean hasRangeExpand = false;
+            QueryConstraints constraints = varToConstraint.get(edge.name);
+            for(Constraint constraint : constraints.getConstraints()){
+                if (constraint.value.type.contains("Range")){
+                    hasRangeExpand = true; break;
+                }
+            }
             if(table.nodes.contains(edge.start) && table.nodes.contains(edge.end)){
-                QueryConstraints constraints = varToConstraint.get(edge.name);
-                ExpandIntoPlan plan = new ExpandIntoPlan(indexer,edge,
-                        constraints,
-                        table);
-                newTable = new PlanTable(table);
-                plan.applyTo(newTable);
+                if(!hasRangeExpand){
+                    ExpandIntoPlan plan = new ExpandIntoPlan(indexer,edge,
+                            constraints,
+                            table);
+
+                    plan.applyTo(newTable);
+                }else{
+                    RangeExpandIntoPlan plan = new RangeExpandIntoPlan(indexer,
+                            edge,
+                            constraints,
+                            table);
+                    plan.applyTo(newTable);
+                }
+
                 newTable = addAdditionalFilter(newTable);
                 candidates.add(newTable);
             }else if(table.nodes.contains(edge.start) || table.nodes.contains(edge.end)){
-                String relation = edge.name;
-                ExpandAllPlan plan = new ExpandAllPlan(indexer, edge,
-                        varToConstraint.get(relation), table);
-                newTable = new PlanTable(table);
-                plan.applyTo(newTable);
+                String addedNode = "";
+                if(!hasRangeExpand){
+                    ExpandAllPlan plan = new ExpandAllPlan(indexer, edge,
+                            constraints, table);
+                    plan.applyTo(newTable);
+                    addedNode = plan.getExpandedNode();
+                }else{
+                    RangeExpandAllPlan plan = new RangeExpandAllPlan(indexer, edge,
+                            constraints,
+                            table);
+                    plan.applyTo(newTable);
+                    addedNode = plan.getExpandedNode();
+                }
+
                 newTable = addAdditionalFilter(newTable);
-                String addedNode = plan.getExpandedNode();
+
+                // If a node is added, should we add filters before or after it?
+
                 if(varToConstraint.get(addedNode).getConstraints().size() > 0){
                     for(Constraint constraint : varToConstraint.get(addedNode).getConstraints()){
                         FilterConstraintPlan plan1 = new FilterConstraintPlan(indexer, addedNode, constraint, newTable);

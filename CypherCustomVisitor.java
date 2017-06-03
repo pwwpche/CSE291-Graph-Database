@@ -37,6 +37,7 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
                                                 equalityList,
                                                 pathList,
                                                 retList,
+                                                mem,
                                                 indexer
                 );
 
@@ -319,8 +320,8 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
 
     @Override
     public Value visitRangeLiteral(CypherParser.RangeLiteralContext ctx) {
-        int INFINITY = 2147483647;
-        Pair<Integer, Integer> range = new Pair<>(-INFINITY, INFINITY);
+
+        Pair<Integer, Integer> range = new Pair<>(0, Integer.MAX_VALUE);
         if (!ctx.getText().equals("*")) {
             if (!ctx.getText().contains("..")) {
                 Integer val = new Integer(ctx.integerLiteral(0).getText());

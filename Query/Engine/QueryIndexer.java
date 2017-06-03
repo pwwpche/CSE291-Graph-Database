@@ -1,8 +1,5 @@
 package Query.Engine;
 
-import Entities.Person;
-
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,6 +17,8 @@ public class QueryIndexer {
     Map<String, Integer> propertyCountOfNodes = new HashMap<>();
     Map<String, Integer> nodeLabelIncoming = new HashMap<>();
     Map<String, Integer> nodeLabelOutgoing = new HashMap<>();
+    Map<String, Map<String, Integer>> nodeRelationInEdgeCount = new HashMap<>();
+    Map<String, Map<String, Integer>> nodeRelationOutEdgeCount = new HashMap<>();
 
     Integer numberOfNodes = 0, numberOfRelations = 0;
 
@@ -119,7 +118,53 @@ public class QueryIndexer {
         statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.mid = n.mid) GROUP BY (label);";
         nodeLabelIncoming = getMapFromSQL(statement);
 
+        for(String nodeLabel : labelNodes.keySet()){
+            nodeRelationOutEdgeCount.put(nodeLabel, new HashMap<>());
+            for(String relationLabel : labelRelation.keySet()){
+                statement =
+                        "SELECT COUNT(*)\n" +
+                        "from Edge LEFT JOIN Person ON Edge.pid = Person.id " +
+                        "  LEFT JOIN NodeLabel ON Person.id = NodeLabel.pid " +
+                        "WHERE label = \"" + nodeLabel + "\" AND rel_type = \"" + relationLabel + "\"";
+                Integer edges = getIntegerFromSQL(statement);
+                nodeRelationOutEdgeCount.get(nodeLabel).put(relationLabel, edges);
+            }
+        }
 
+        for(String nodeLabel : labelNodes.keySet()){
+            nodeRelationInEdgeCount.put(nodeLabel, new HashMap<>());
+            for(String relationLabel : labelRelation.keySet()){
+                statement =
+                        "SELECT COUNT(*)\n" +
+                                "from Edge LEFT JOIN Movie ON Edge.mid = Movie.id " +
+                                "  LEFT JOIN NodeLabel ON Movie.id = NodeLabel.mid " +
+                                "WHERE label = \"" + nodeLabel + "\" AND rel_type = \"" + relationLabel + "\"";
+                Integer edges = getIntegerFromSQL(statement);
+                nodeRelationInEdgeCount.get(nodeLabel).put(relationLabel, edges);
+            }
+        }
+
+    }
+
+    public int getIncomingOfNodeRelation(String nodeLabel, String relationLabel){
+        if(relationLabel.equals("")){
+            return nodeLabel.equals("") ? numberOfRelations : nodeLabelIncoming.get(nodeLabel);
+        }
+        if(nodeLabel.equals("")){
+            return labelRelation.get(relationLabel);
+        }
+        return nodeRelationInEdgeCount.get(nodeLabel).get(relationLabel);
+
+    }
+
+    public int getOutingOfNodeRelation(String nodeLabel, String relationLabel){
+        if(relationLabel.equals("")){
+            return nodeLabel.equals("") ? numberOfRelations : nodeLabelOutgoing.get(nodeLabel);
+        }
+        if(nodeLabel.equals("")){
+            return labelRelation.get(relationLabel);
+        }
+        return nodeRelationOutEdgeCount.get(nodeLabel).get(relationLabel);
 
     }
 

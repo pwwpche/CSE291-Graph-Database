@@ -14,10 +14,11 @@ import java.util.List;
  */
 public class ExpandIntoPlan extends Plan {
     private RelationEdge edge;
-
+    private QueryConstraints cons;
     public ExpandIntoPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
+        this.cons = constraints;
         this.estimatedSize = table.estimatedSize;
         double validEdges = Double.MAX_VALUE;
 
@@ -80,7 +81,7 @@ public class ExpandIntoPlan extends Plan {
 
     @Override
     public String getParams() {
-        return "-[" + edge.name + "]-(" + edge.end + ")";
+        return "-[" + edge.name + cons.toString() + "]-(" + edge.end + ")";
     }
 
     @Override

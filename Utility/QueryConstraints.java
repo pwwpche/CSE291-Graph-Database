@@ -27,4 +27,11 @@ public class QueryConstraints {
     public List<Constraint> getConstraints(){
         return cons;
     }
+
+    @Override
+    public String toString() {
+        List<String> consStr = new ArrayList<>();
+        cons.forEach(constraint -> consStr.add(constraint.toString()));
+        return String.join("", consStr);
+    }
 }

@@ -16,10 +16,12 @@ public class ExpandAllPlan extends Plan {
     private RelationEdge edge;
     private String fromNode;
     private String toNode;
+    QueryConstraints cons;
     public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
+        this.cons = constraints;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
         List<String> usedLabels = new ArrayList<>();
