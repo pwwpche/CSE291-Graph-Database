@@ -1,146 +1,94 @@
 package Query.Engine;
 
+import Utility.DBSchema;
+import Utility.DBUtil;
+import Utility.FileParser;
+
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
  * Created by liuche on 5/29/17.
+ *
+ * Requirements:
+ * Schema of the imported CSV file should be
+ * "{node1: n, node1Label: labels(n), relationship: r, rel_type: type(r), node2:m, node2Label: labels(m)}"
+ *
  */
 public class QueryIndexer {
     Connection conn;
 
-    Map<String, Integer> labelRelation = new HashMap<>();
-    Map<String, Integer> labelNodes = new HashMap<>();
-    Map<String, Integer> propertyCountOfNodes = new HashMap<>();
-    Map<String, Integer> nodeLabelIncoming = new HashMap<>();
-    Map<String, Integer> nodeLabelOutgoing = new HashMap<>();
-    Map<String, Map<String, Integer>> nodeRelationInEdgeCount = new HashMap<>();
-    Map<String, Map<String, Integer>> nodeRelationOutEdgeCount = new HashMap<>();
+    private Map<String, Integer> labelRelation = new HashMap<>();
+    private Map<String, Integer> labelNodes = new HashMap<>();
+    private Map<String, Integer> propertyCountOfNodes = new HashMap<>();
+    private Map<String, Integer> nodeLabelIncoming = new HashMap<>();
+    private Map<String, Integer> nodeLabelOutgoing = new HashMap<>();
+    private Map<String, Map<String, Integer>> nodeRelationInEdgeCount = new HashMap<>();
+    private Map<String, Map<String, Integer>> nodeRelationOutEdgeCount = new HashMap<>();
 
-    Integer numberOfNodes = 0, numberOfRelations = 0;
+    private Integer numberOfNodes = 0, numberOfRelations = 0;
+    private DBUtil dbUtil;
 
-    private Integer getIntegerFromSQL(String statement){
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(statement);
-            ResultSet result = preparedStatement.executeQuery();
-            result.next();
-            return result.getInt(1);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
-    private List<String> getListFromSQL(String statement){
-        List<String> resList = new ArrayList<>();
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(statement);
-            ResultSet result = preparedStatement.executeQuery();
-            while(result.next()){
-                String str = result.getString(1);
-                resList.add(str);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return resList;
-    }
-
-    private Map<String, Integer> getMapFromSQL(String statement){
-        Map<String, Integer> resMap = new HashMap<>();
-        try {
-            PreparedStatement preparedStatement = conn.prepareStatement(statement);
-            ResultSet result = preparedStatement.executeQuery();
-            while(result.next()){
-                String str = result.getString(1);
-                Integer integer = result.getInt(2);
-                resMap.put(str, integer);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return resMap;
-    }
-
-
-    public QueryIndexer(Connection conn) {
+    public QueryIndexer(Connection conn, DBSchema dbSchema) {
         this.conn = conn;
+        this.dbUtil = new DBUtil(conn);
 
         // Get number of nodes and relations
-        String statement = "SELECT COUNT(*) FROM person;";
-        this.numberOfNodes = getIntegerFromSQL(statement);
-        statement = "SELECT COUNT(*) FROM movie;";
-        this.numberOfNodes += getIntegerFromSQL(statement);
+        String statement = "SELECT COUNT(*) FROM ObjectType WHERE type != \"0\";";
+        this.numberOfNodes = dbUtil.getIntegerFromSQL(statement);
 
         statement = "SELECT COUNT(*) FROM Edge;";
-        this.numberOfRelations = getIntegerFromSQL(statement);
+        this.numberOfRelations = dbUtil.getIntegerFromSQL(statement);
 
         // Get number of nodes with same label
         statement = "select label, COUNT(*) from NodeLabel GROUP BY (label);";
-        labelNodes = getMapFromSQL(statement);
+        labelNodes = dbUtil.getMapFromSQL(statement);
 
         // Get number of relations with same label
         statement = "SELECT rel_type, COUNT(*) from Edge GROUP BY rel_type;";
-        labelRelation = getMapFromSQL(statement);
+        labelRelation = dbUtil.getMapFromSQL(statement);
 
-        ArrayList<String> node1Fields = new ArrayList<>(Arrays.asList(
-                "birthday", "birthplace", "deg", "name", "lastModified",
-                "id", "biography", "version", "profileImageUrl"
-        ));
+        // Get number of distinct values of each property in nodes.
+        statement = "SELECT DISTINCT(name) FROM typeProperty WHERE id > 0";
+        List<String> nodeFields = dbUtil.getListFromSQL(statement);
 
-        for(String field : node1Fields){
-            statement = "SELECT COUNT(distinct " + field + ") FROM Person;";
-            Integer counts = getIntegerFromSQL(statement);
+        for(String field : nodeFields){
+            statement = "SELECT COUNT(distinct value) FROM P_" + field + ";";
+            Integer counts = dbUtil.getIntegerFromSQL(statement);
             Integer prevCount = propertyCountOfNodes.getOrDefault(field, 0);
             propertyCountOfNodes.put(field, prevCount + counts);
         }
 
+        // Get number of edges that comes out of nodes with same label.
+        statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.node1 = n.gid) GROUP BY (label);";
+        nodeLabelOutgoing = dbUtil.getMapFromSQL(statement);
 
-        ArrayList<String> node2Fields = new ArrayList<>(Arrays.asList(
-                "studio", "releaseDate", "imdbId", "runtime", "description",
-                "language", "title", "version", "trailer", "imageUrl", "genre",
-                "tagline", "lastModified", "id", "homepage"
-        ));
+        // Get number of edges that goes into nodes with same label.
+        statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.node2 = n.gid) GROUP BY (label);";
+        nodeLabelIncoming = dbUtil.getMapFromSQL(statement);
 
-        for(String field : node2Fields){
-            statement = "SELECT COUNT(distinct " + field + ") FROM Movie;";
-            Integer counts = getIntegerFromSQL(statement);
-            Integer prevCount = propertyCountOfNodes.getOrDefault(field, 0);
-            propertyCountOfNodes.put(field, prevCount + counts);
-        }
 
-        statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.pid = n.pid) GROUP BY (label);";
-        nodeLabelOutgoing = getMapFromSQL(statement);
-
-        statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.mid = n.mid) GROUP BY (label);";
-        nodeLabelIncoming = getMapFromSQL(statement);
-
-        for(String nodeLabel : labelNodes.keySet()){
-            nodeRelationOutEdgeCount.put(nodeLabel, new HashMap<>());
+        for(String label : labelNodes.keySet()){
+            nodeRelationOutEdgeCount.put(label, new HashMap<>());
             for(String relationLabel : labelRelation.keySet()){
                 statement =
                         "SELECT COUNT(*)\n" +
-                        "from Edge LEFT JOIN Person ON Edge.pid = Person.id " +
-                        "  LEFT JOIN NodeLabel ON Person.id = NodeLabel.pid " +
-                        "WHERE label = \"" + nodeLabel + "\" AND rel_type = \"" + relationLabel + "\"";
-                Integer edges = getIntegerFromSQL(statement);
-                nodeRelationOutEdgeCount.get(nodeLabel).put(relationLabel, edges);
+                        "from Edge LEFT JOIN NodeLabel ON Edge.node1 = NodeLabel.gid " +
+                        "WHERE label = \"" + label + "\" AND rel_type = \"" + relationLabel + "\"";
+                Integer edges = dbUtil.getIntegerFromSQL(statement);
+                nodeRelationOutEdgeCount.get(label).put(relationLabel, edges);
             }
         }
 
-        for(String nodeLabel : labelNodes.keySet()){
-            nodeRelationInEdgeCount.put(nodeLabel, new HashMap<>());
+        for(String label : labelNodes.keySet()){
+            nodeRelationInEdgeCount.put(label, new HashMap<>());
             for(String relationLabel : labelRelation.keySet()){
                 statement =
                         "SELECT COUNT(*)\n" +
-                                "from Edge LEFT JOIN Movie ON Edge.mid = Movie.id " +
-                                "  LEFT JOIN NodeLabel ON Movie.id = NodeLabel.mid " +
-                                "WHERE label = \"" + nodeLabel + "\" AND rel_type = \"" + relationLabel + "\"";
-                Integer edges = getIntegerFromSQL(statement);
-                nodeRelationInEdgeCount.get(nodeLabel).put(relationLabel, edges);
+                                "from Edge LEFT JOIN NodeLabel ON Edge.node2 = NodeLabel.gid " +
+                                "WHERE label = \"" + label + "\" AND rel_type = \"" + relationLabel + "\"";
+                Integer edges = dbUtil.getIntegerFromSQL(statement);
+                nodeRelationInEdgeCount.get(label).put(relationLabel, edges);
             }
         }
 

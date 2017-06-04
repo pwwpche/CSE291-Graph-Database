@@ -18,7 +18,7 @@ public class NodeRelation {
     }
 
     public String generateQueryString(String table){
-        String query = "insert into " + table + "(name) values(" +
+        String query = "insertObject into " + table + "(name) values(" +
                 "\"" + this.name + "\"" +
                 ");";
         return query;

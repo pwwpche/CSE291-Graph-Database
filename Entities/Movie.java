@@ -61,7 +61,7 @@ public class Movie {
     }
 
     public String generateQueryString(String table){
-        String query = "insert into " + table +
+        String query = "insertObject into " + table +
                 "(studio, releaseDate, imdbId, runtime, description, language, title, version, " +
                 "trailer, imageUrl, genre, tagline, lastModified, id, homepage) " +
                 "values( " +

@@ -3,11 +3,16 @@
 // Deployment:
 // Maven add commons-csv-1.4, mongodb-driver-3.4.2
 
+import Query.Engine.QueryIndexer;
+import Utility.DBSchema;
 import Utility.FileParser;
 
 import java.io.IOException;
 
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Map;
 
 
@@ -17,19 +22,19 @@ import java.util.Map;
 * */
 public class Main {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
         //Parsing this CSV file:
 
-//        String url = "jdbc:mysql://localhost:3306/test";
-//        String username = "root";
-//        String password = "";
-//        boolean importData = false;
-
+        String url = "jdbc:mysql://localhost:3306/test";
+        String username = "root";
+        String password = "";
+        boolean importData = false;
+        Connection connection = DriverManager.getConnection(url, username, password);
 //        try {
 //            // Connect to MySQL Database
 //            // Schema is in Tables.sql
 //
-//            Connection connection = DriverManager.getConnection(url, username, password);
+//
 //
 //            if(importData) {
 //                //Create tables;
@@ -45,7 +50,7 @@ public class Main {
 //                connection.close();
 //                connection = DriverManager.getConnection(url, username, password);
 //
-//                Utility.DBSetupUtil dbSetupUtil = new Utility.DBSetupUtil(connection);
+//                Utility.DBSetupUtil2 dbSetupUtil = new Utility.DBSetupUtil2(connection);
 //                BufferedReader br = new BufferedReader(new FileReader("src/sample.csv"));
 //
 //                // Parse file line by line.
@@ -100,9 +105,9 @@ public class Main {
 //
 //
 
-        FileParser fileParser = new FileParser("src/sample.csv");
-        fileParser.run();
-
+        FileParser fileParser = new FileParser("src/sample.csv", connection);
+        DBSchema dbSchema = fileParser.run();
+        QueryIndexer queryIndexer = new QueryIndexer(connection, dbSchema);
 
         return ;
 

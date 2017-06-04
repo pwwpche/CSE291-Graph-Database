@@ -43,7 +43,7 @@ public class Person {
     }
 
     public String generateQueryString(String table){
-        String query = "insert into " + table +
+        String query = "insertObject into " + table +
                 "(birthday,birthplace,deg,name,lastModified,id," +
                 "biography,version,profileImageUrl) values(" +
                 "\"" + this.birthday + "\", " +

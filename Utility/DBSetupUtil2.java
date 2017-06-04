@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * Created by liuche on 5/20/17.
  */
-public class DBSetupUtil {
+public class DBSetupUtil2 {
 
     Connection conn;
 
-    public DBSetupUtil(Connection conn) {
+    public DBSetupUtil2(Connection conn) {
         String url = "jdbc:mysql://localhost:3306/test";
         String username = "root";
         String password = "";
