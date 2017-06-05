@@ -27,6 +27,7 @@ public class ScanByLabelPlan extends Plan {
     public void applyTo(PlanTable table) {
         table.nodes.add(variable);
         table.estimatedSize = estimatedSize;
+        table.cost += estimatedSize;
         table.plans.add(this);
     }
 

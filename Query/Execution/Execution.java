@@ -4,6 +4,7 @@ import Query.Plan.Plan;
 import Utility.DBUtil;
 import DataImport.FileParser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +13,11 @@ import java.util.Map;
  * Created by liuche on 6/5/17.
  */
 public class Execution {
-    private ResultTable resultTable;
-    private Plan plan;
-    private DBUtil dbUtil;
+    protected ResultTable resultTable;
+    protected Plan plan;
+    protected int operandCount = 0;
+    protected DBUtil dbUtil;
+    protected List<String> querySQL = new ArrayList<>();
 
     public Execution(DBUtil util, Plan plan){
         this.dbUtil = util;
@@ -22,36 +25,52 @@ public class Execution {
         this.plan = plan;
     }
 
+    public int operandCount(){
+        return operandCount();
+    }
+
+    public List<String> getQuerySQL(){
+        return this.querySQL;
+    }
+
     public ResultTable execute(){
         return resultTable;
     }
 
-    private List<String> getAllNodeGid(){
+    public ResultTable execute(ResultTable table1){
+        return resultTable;
+    }
+
+    public ResultTable execute(ResultTable table1, ResultTable table2){
+        return resultTable;
+    }
+
+    protected List<String> getAllNodeGid(){
         String statement = "SELECT COUNT(*) FROM ObjectType WHERE type != \"0\";";
         return dbUtil.getListFromSQL(statement);
     }
 
-    private List<String> getNodeGidBy(String field, String value){
+    protected List<String> getNodeGidBy(String field, String value){
         String statement = "SELECT gid FROM P_" + field + "WHERE " + field + " = \"" + value + "\";";
         return dbUtil.getListFromSQL(statement);
     }
 
-    private List<String> getEdgeIdByFromGid(String node1){
+    protected List<String> getEdgeIdByFromGid(String node1){
         String statement = "SELECT eid FROM Edge WHERE node1 = \"" + node1 + "\";";
         return dbUtil.getListFromSQL(statement);
     }
 
-    private List<String> getEdgeIdByToGid(String node1){
+    protected List<String> getEdgeIdByToGid(String node1){
         String statement = "SELECT eid FROM Edge WHERE node2 = \"" + node1 + "\";";
         return dbUtil.getListFromSQL(statement);
     }
 
-    private Map<String, String> expandEdge(String eid){
+    protected Map<String, String> expandEdge(String eid){
         String statement = "SELECT * FROM edge WHERE eid = \""  + eid + "\";";
         return dbUtil.getObjectFromSQL(statement);
     }
 
-    private Map<String, String> expandObject(Integer gid){
+    protected Map<String, String> expandObject(Integer gid){
         String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid.toString() + "\";";
         Integer nodeType = dbUtil.getIntegerFromSQL(statement);
         statement = "SELECT name FROM typeProperty WHERE id = \"" + nodeType.toString() + "\";";

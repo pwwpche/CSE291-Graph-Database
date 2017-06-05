@@ -22,7 +22,7 @@ public class DBUtil {
         this.recording = true;
     }
 
-    public void endRecording(){
+    public void stopRecording(){
         this.recording = false;
     }
 

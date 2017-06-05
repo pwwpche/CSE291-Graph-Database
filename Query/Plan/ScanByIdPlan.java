@@ -20,6 +20,7 @@ public class ScanByIdPlan extends Plan {
     public void applyTo(PlanTable table) {
         table.nodes.add(variable);
         table.estimatedSize = estimatedSize;
+        table.cost += 1;
         table.plans.add(this);
     }
 
