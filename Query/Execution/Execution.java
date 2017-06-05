@@ -70,6 +70,11 @@ public class Execution {
         return dbUtil.getObjectFromSQL(statement);
     }
 
+    protected String getPropertyByGid(String field, String gid){
+        String statement = "SELECT gid FROM P_" + field + "WHERE gid = \"" + gid + "\";";
+        return dbUtil.getStringFromSQL(statement);
+    }
+
     protected Map<String, String> expandObject(Integer gid){
         String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid.toString() + "\";";
         Integer nodeType = dbUtil.getIntegerFromSQL(statement);

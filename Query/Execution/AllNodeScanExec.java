@@ -10,7 +10,7 @@ public class AllNodeScanExec extends Execution{
 
     public AllNodeScanExec(DBUtil util, AllNodeScanPlan plan) {
         super(util, plan);
-        this.isLeaf = true;
+        this.operandCount = 0;
     }
 
     @Override

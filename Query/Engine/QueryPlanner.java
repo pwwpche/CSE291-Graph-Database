@@ -142,17 +142,15 @@ public class QueryPlanner {
                 constructExpand(table);
             }
 
-            // TODO: Wrong estimation of join and expandAll.
             if(candidates.isEmpty()){
                 break;
             }
 
-            // TODO: Add cost calculation to each plan.
-            double bestEstimate = Double.MAX_VALUE;
+            double bestCost = Double.MAX_VALUE;
             int index = -1;
             for(int i = 0 , size = candidates.size() ; i < size ; i++){
-                if(candidates.get(i).cost < bestEstimate){
-                    bestEstimate = candidates.get(i).cost;
+                if(candidates.get(i).cost < bestCost){
+                    bestCost = candidates.get(i).cost;
                     index = i;
                 }
             }
@@ -173,10 +171,23 @@ public class QueryPlanner {
         }while(candidates.size() > 0);
         assert planTables.size() == 1;
 
-        // TODO: Process return list
-
-
         PlanTable bestPlan = planTables.get(0);
+
+        // TODO: Process return list. Path and aggregation are not supported for now.
+//        boolean needProjection = false;
+//        for(Pair<String, String> retItem : retList){
+//            if(retItem.getV1() != ""){
+//                needProjection = true;
+//                break;
+//            }
+//        }
+//        if(needProjection){
+//            ProduceResultPlan projectionPlan = new ProduceResultPlan(indexer, bestPlan, retList);
+//            projectionPlan.applyTo(bestPlan);
+//        }
+        ProduceResultPlan produceResultPlan = new ProduceResultPlan(indexer, bestPlan, retList);
+        produceResultPlan.applyTo(bestPlan);
+
         for(Plan plan : bestPlan.plans.toList()){
             System.out.println(plan.getName() + "|" + plan.getVariable() + "|" + plan.getParams());
         }

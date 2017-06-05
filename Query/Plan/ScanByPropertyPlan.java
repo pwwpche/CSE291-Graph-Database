@@ -21,6 +21,7 @@ public class ScanByPropertyPlan extends Plan {
     public void applyTo(PlanTable table) {
         table.nodes.add(variable);
         table.estimatedSize = estimatedSize;
+        table.cost += this.estimatedSize;
         table.plans.add(this);
     }
 

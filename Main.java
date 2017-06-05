@@ -31,13 +31,16 @@ public class Main {
         System.out.println("Connecting to MySQL...");
         Connection connection = DriverManager.getConnection(url, username, password);
         System.out.println("MySQL connected.");
-        System.out.println("Parsing file...");
-        FileParser fileParser = new FileParser("src/sample.csv", connection);
-        fileParser.run();
-        System.out.println("Parsing complete.");
+
+//        System.out.println("Parsing file...");
+//        FileParser fileParser = new FileParser("src/sample.csv", connection);
+//        fileParser.run();
+//        System.out.println("Parsing complete.");
+
         System.out.println("Creating index...");
         QueryIndexer queryIndexer = new QueryIndexer(connection);
         System.out.println("Index created...");
+
         System.out.println("Parsing ANTLR query...");
         CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));
         CypherParser parser = new CypherParser(new CommonTokenStream(lexer));

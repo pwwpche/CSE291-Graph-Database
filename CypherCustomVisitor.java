@@ -112,8 +112,10 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         List<Pair<String, String>> returnVals = new ArrayList<>();
         for(int i = 0, size = ctx.expression().size(); i < size ; i++){
             Value retVal = this.visit(ctx.expression(i));
-            assert retVal.type.equals("Variable") || retVal.type.equals("PropertyLookup");
-            if(retVal.type.equals("Variable")){
+            assert retVal.type.equals("Variable") || retVal.type.equals("PropertyLookup") || retVal.isConstant;
+            if(retVal.isConstant){
+                returnVals.add(new Pair<>("Constant", retVal.val.toString()));
+            }else if(retVal.type.equals("Variable")){
                 String varName = (String)(retVal.val);
                 returnVals.add(new Pair<>(varName, ""));
             }else{

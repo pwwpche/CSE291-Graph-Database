@@ -50,6 +50,10 @@ public class QueryExecution {
 
             }else if(plan instanceof CartesianProductPlan){
 
+            }else if(plan instanceof FilterConstraintPlan){
+
+            }else if(plan instanceof FilterRelationEqualityPlan){
+
             }
         }
 
