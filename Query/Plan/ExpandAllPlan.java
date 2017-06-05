@@ -11,12 +11,14 @@ import java.util.List;
 
 /**
  * Created by liuche on 5/29/17.
+ *
  */
 public class ExpandAllPlan extends Plan {
     private RelationEdge edge;
     private String fromNode;
     private String toNode;
-    QueryConstraints cons;
+    private QueryConstraints cons;
+
     public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
@@ -26,50 +28,73 @@ public class ExpandAllPlan extends Plan {
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
         List<String> usedLabels = new ArrayList<>();
         List<String> usedRelations = new ArrayList<>();
-        for( Plan plan : table.plans){
+        for (Plan plan : table.plans.toList()) {
             if (plan instanceof ScanByLabelPlan) {
-                if(((ScanByLabelPlan) plan).variable.equals(fromNode)){
+                if (((ScanByLabelPlan) plan).variable.equals(fromNode)) {
                     usedLabels.addAll(((ScanByLabelPlan) plan).labels);
                 }
             }
         }
 
-        // TODO: Improve size estimation of edge expansion
-        for(Constraint constraint : constraints.getConstraints()){
-            if(constraint.name.equals("rel_type")){
+        for (Constraint constraint : constraints.getConstraints()) {
+            if (constraint.name.equals("rel_type")) {
                 assert constraint.value.type.contains("List");
                 List<String> types = (List<String>) constraint.value.val;
                 usedRelations.addAll(types);
             }
             //TODO: Relation with string property is not implemented.
         }
-        if(usedLabels.size() == 0 && usedRelations.size() == 0){
-            this.estimatedSize = (int) (this.estimatedSize * 1.0 * (indexer.getNumberOfRelations()) / indexer.getNumberOfNode());
-        }else{
-            if(usedLabels.size() == 0){
-                //TODO: Add seperate cases for incoming and outgoing edges.
+        if (usedLabels.size() == 0 && usedRelations.size() == 0) {
+            int minExpand = indexer.getNumberOfNode() < indexer.getNumberOfRelations()
+                    ? indexer.getNumberOfNode()
+                    : indexer.getNumberOfRelations();
+            this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
+        } else {
+            if (usedLabels.size() == 0) {
                 double size = 0;
-                for(String relationLabel : usedRelations){
+                for (String relationLabel : usedRelations) {
                     size += indexer.getRelationsWithLabel(relationLabel);
                 }
-                size = size / (indexer.getNumberOfRelations() * 1.0);
-                this.estimatedSize = (int)(this.estimatedSize * 1.0 * size);
-            }else{
-                if(edge.direction.equals("--")){
-                    edge.direction = "<-->";
-                }
-                double minEdgesOfLabel = Integer.MAX_VALUE;
-                for(String nodeLabel : usedLabels){
-                    double totEdges = 0;
-                    if(edge.direction.contains("->")){
-                        totEdges +=  indexer.getOutgoingOfLabel(nodeLabel) * 1.0 / indexer.getNodesWithLabel(nodeLabel);
+                double minExpand = indexer.getNumberOfNode() < size
+                        ? indexer.getNumberOfNode() : size;
+                this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
+            } else {
+
+                double minEdgesOfLabel = 0;
+                for (String relation : usedRelations) {
+                    int cost = 0;
+                    int outgoingSize = Integer.MAX_VALUE, incomingSize = Integer.MAX_VALUE;
+
+                    for (String nodeLabel : usedLabels) {
+                        if (!edge.direction.equals("<--")) {
+                            int edges = indexer.getOutingOfNodeRelation(nodeLabel, relation);
+                            outgoingSize = outgoingSize < edges ? outgoingSize : edges;
+                        }
+                        if (!edge.direction.equals("-->")) {
+                            int edges = indexer.getIncomingOfNodeRelation(nodeLabel, relation);
+                            incomingSize = incomingSize < edges ? incomingSize : edges;
+                        }
                     }
-                    if(edge.direction.contains("<-")){
-                        totEdges +=  indexer.getIncomingOfLabel(nodeLabel) * 1.0 / indexer.getNodesWithLabel(nodeLabel);
+                    switch (edge.direction) {
+                        case "-->":
+                            cost = outgoingSize;
+                            break;
+                        case "<--":
+                            cost = incomingSize;
+                            break;
+                        case "<-->":
+                            cost = (incomingSize < outgoingSize) ? incomingSize : outgoingSize;
+                            break;
+                        case "--":
+                            cost = (incomingSize > outgoingSize) ? incomingSize : outgoingSize;
+                            break;
+                        default:
+                            break;
                     }
-                    minEdgesOfLabel = minEdgesOfLabel > totEdges ? totEdges : minEdgesOfLabel;
+                    minEdgesOfLabel += cost;
                 }
-                this.estimatedSize = (int)(this.estimatedSize * 1.0 * minEdgesOfLabel);
+
+                this.estimatedSize = (int) (this.estimatedSize * 1.0 * minEdgesOfLabel);
             }
         }
     }
@@ -86,7 +111,7 @@ public class ExpandAllPlan extends Plan {
 
     @Override
     public String getParams() {
-        return "-[" + edge.name + "]-(" + toNode + ")";
+        return "-[" + edge.name + (cons.getConstraints().size() == 0 ? "" : ":" + cons.toString()) + "]-(" + toNode + ")";
     }
 
     @Override
@@ -99,11 +124,11 @@ public class ExpandAllPlan extends Plan {
         return "ExpandAll";
     }
 
-    public RelationEdge getRelationEdge(){
+    public RelationEdge getRelationEdge() {
         return this.edge;
     }
 
-    public String getExpandedNode(){
+    public String getExpandedNode() {
         return toNode;
     }
 }

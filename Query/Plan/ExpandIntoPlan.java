@@ -6,6 +6,7 @@ import Query.Entities.RelationEdge;
 import Utility.Constraint;
 import Utility.QueryConstraints;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -15,58 +16,110 @@ import java.util.List;
 public class ExpandIntoPlan extends Plan {
     private RelationEdge edge;
     private QueryConstraints cons;
+
+    private List<String> getLabels(String variable, PlanTable table){
+        List<String> result = new ArrayList<>();
+        for(Plan plan : table.plans.toList()){
+            if(plan instanceof ScanByLabelPlan){
+                if(((ScanByLabelPlan) plan).variable.equals(variable)){
+                    result.addAll(((ScanByLabelPlan) plan).labels);
+                }
+            }
+            if(plan instanceof FilterConstraintPlan){
+                if(plan.getVariable().equals(variable)){
+                    Constraint constraint = ((FilterConstraintPlan) plan).getConstraint();
+                    if(constraint.name.equals("nodeLabels")){
+                        List<String> labels = (List<String>) constraint.value.val;
+                        result.addAll(labels);
+                    }
+                }
+            }
+        }
+        return result;
+    }
     public ExpandIntoPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.cons = constraints;
         this.estimatedSize = table.estimatedSize;
-        double validEdges = Double.MAX_VALUE;
 
-        // Size estimation for (a:A:B)-[]->()
-        for(Plan plan : table.plans){
-            if(plan instanceof ScanByLabelPlan){
-                if(validEdges == Double.MAX_VALUE){
-                    validEdges = 0;
-                }
-                if(((ScanByLabelPlan) plan).variable.equals(edge.start)){
-                    List<String> labels = ((ScanByLabelPlan) plan).labels;
-                    for(String label : labels){
-                        int outingEdge = indexer.getOutgoingOfLabel(label);
-                        validEdges = validEdges > outingEdge ? outingEdge : validEdges;
-                    }
-                }
+        List<String> labels1 = getLabels(edge.start, table);
+        List<String> labels2 = getLabels(edge.end, table);
+        List<String> relations = new ArrayList<>();
 
+        for(Constraint constraint : constraints.getConstraints()){
+            if(constraint.name.equals("rel_type")){
+                assert constraint.value.type.contains("List");
+                List<String> types = (List<String>) constraint.value.val;
+                relations.addAll(types);
             }
         }
-        if(validEdges != Double.MAX_VALUE){
-            double edgeRatio = validEdges * 1.0 / indexer.getNumberOfNode();
-            this.estimatedSize = (int)(this.estimatedSize * 1.0 * edgeRatio);
-        }
 
-        // Size estimation for (a)-[r:R1|R2]->()
-        if(validEdges == Double.MAX_VALUE){
-            // TODO: Improve size estimation of edge expansion
-            for(Constraint constraint : constraints.getConstraints()){
-                if(constraint.name.equals("rel_type")){
-                    assert constraint.value.type.contains("List");
-                    List<String> types = (List<String>) constraint.value.val;
-                    if(validEdges == Double.MAX_VALUE){
-                        validEdges = 0;
-                    }
-                    for(String type : types){
-                        validEdges += indexer.getRelationsWithLabel(type);
-                    }
+        // Size estimation for (a:A:B)-[r:R1|R2]->(b:D:E)
+        Integer outgoingSize = 0, incomingSize = 0;
+        if(!edge.direction.equals("<--")){
+            int currentSize = 0;
+            for(String relation : relations){
+                int minEdges = Integer.MAX_VALUE;
+                for(String label : labels1){
+                    int edges = indexer.getOutingOfNodeRelation(label, relation);
+                    minEdges = (minEdges < edges) ? minEdges : edges;
                 }
-                //TODO: Relation with string property is not implemented.
+                currentSize += minEdges;
             }
-            if(validEdges !=  Double.MAX_VALUE){
-                double edgeRatio = validEdges * 1.0 / indexer.getNumberOfRelations();
-                this.estimatedSize = (int)(this.estimatedSize * 1.0 * edgeRatio);
+            outgoingSize = currentSize; currentSize = 0;
+            for(String relation : relations){
+                int minEdges = Integer.MAX_VALUE;
+                for(String label : labels2){
+                    int edges = indexer.getIncomingOfNodeRelation(label, relation);
+                    minEdges = (minEdges < edges) ? minEdges : edges;
+                }
+                currentSize += minEdges;
             }
+            outgoingSize = (outgoingSize < currentSize) ? outgoingSize : currentSize;
+        }
+
+        if(!edge.direction.equals("-->")){
+            int currentSize = 0;
+            for(String relation : relations){
+                int minEdges = Integer.MAX_VALUE;
+                for(String label : labels1){
+                    int edges = indexer.getIncomingOfNodeRelation(label, relation);
+                    minEdges = (minEdges < edges) ? minEdges : edges;
+                }
+                currentSize += minEdges;
+            }
+            incomingSize = currentSize; currentSize = 0;
+            for(String relation : relations){
+                int minEdges = Integer.MAX_VALUE;
+                for(String label : labels2){
+                    int edges = indexer.getOutingOfNodeRelation(label, relation);
+                    minEdges = (minEdges < edges) ? minEdges : edges;
+                }
+                currentSize += minEdges;
+            }
+            incomingSize = (incomingSize < currentSize) ? incomingSize : currentSize;
+        }
+        int cost = 0;
+        switch (edge.direction){
+            case "-->" :
+                cost = outgoingSize;
+                break;
+            case "<--" :
+                cost = incomingSize;
+                break;
+            case "<-->" :
+                cost = (incomingSize < outgoingSize) ? incomingSize : outgoingSize;
+                break;
+            case "--" :
+                cost = (incomingSize > outgoingSize) ? incomingSize : outgoingSize;
+                break;
+            default:
+                break;
 
         }
 
-
+        this.estimatedSize = this.estimatedSize < cost ? this.estimatedSize : cost;
 
     }
 

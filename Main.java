@@ -6,6 +6,8 @@
 import Query.Engine.QueryIndexer;
 import Utility.DBSchema;
 import Utility.FileParser;
+import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.CommonTokenStream;
 
 import java.io.IOException;
 
@@ -105,10 +107,16 @@ public class Main {
 //
 //
 
-        FileParser fileParser = new FileParser("src/sample.csv", connection);
-        DBSchema dbSchema = fileParser.run();
-        QueryIndexer queryIndexer = new QueryIndexer(connection, dbSchema);
+        //FileParser fileParser = new FileParser("src/sample.csv", connection);
+        //DBSchema dbSchema = fileParser.run();
+        QueryIndexer queryIndexer = new QueryIndexer(connection);
 
+        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));
+        CypherParser parser = new CypherParser(new CommonTokenStream(lexer));
+        CypherParser.CypherContext cypher = parser.cypher();
+        CypherCustomVisitor visitor = new CypherCustomVisitor();
+        visitor.setIndexer(queryIndexer);
+        visitor.visit(cypher);
         return ;
 
 

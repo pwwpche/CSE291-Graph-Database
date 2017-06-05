@@ -38,9 +38,9 @@ public class Constraint {
         switch (name){
             case "label": case "rel_type":
                 if(equality.equals("==")){
-                    return  ":" + value;
+                    return  ":" + value.val.toString();
                 }else{
-                    return "label != " + value;
+                    return "label != " + value.val.toString();
                 }
             case "nodeLabels":
                 List<String> stringList = new ArrayList<>();

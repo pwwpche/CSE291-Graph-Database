@@ -2,6 +2,7 @@ package Query.Plan;
 
 import Query.Engine.QueryIndexer;
 import Query.Entities.PlanTable;
+import Query.Entities.PlanTree;
 
 /**
  * Created by liuche on 5/29/17.
@@ -22,7 +23,7 @@ public class CartesianProductPlan extends Plan {
         table.nodes.addAll(from.nodes);
         table.relations.addAll(from.relations);
         table.estimatedSize = this.estimatedSize;
-        table.plans.addAll(from.plans);
+        table.plans = PlanTree.Combine(from.plans, to.plans, this);
         table.plans.add(this);
         table.cost += this.estimatedSize;
         super.applyTo(table);

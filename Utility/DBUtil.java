@@ -15,12 +15,28 @@ import java.util.Map;
  */
 public class DBUtil {
     private Connection conn;
-
+    private List<String> executeHistory = new ArrayList<>();
+    private boolean recording = false;
     public DBUtil(Connection connection){
         this.conn = connection;
     }
 
+    public void startRecording(){
+        this.recording = true;
+    }
+
+    public void endRecording(){
+        this.recording = false;
+    }
+
+    public List<String> getExecuteHistory(){
+        return this.executeHistory;
+    }
+
     public void executeSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
         try {
             if(statement.trim().length() > 0){
                 PreparedStatement preparedStatement = conn.prepareStatement(statement);
@@ -32,6 +48,9 @@ public class DBUtil {
     }
 
     public void executeSQL(List<String> statements){
+        if(recording){
+            executeHistory.addAll(statements);
+        }
         try {
             if(statements.size() == 0){
                 return ;
@@ -51,6 +70,9 @@ public class DBUtil {
 
 
     public Integer getIntegerFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
             ResultSet result = preparedStatement.executeQuery();
@@ -63,6 +85,9 @@ public class DBUtil {
     }
 
     public String getStringFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
             ResultSet result = preparedStatement.executeQuery();
@@ -76,6 +101,9 @@ public class DBUtil {
 
 
     public List<String> getListFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
         List<String> resList = new ArrayList<>();
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
@@ -91,6 +119,9 @@ public class DBUtil {
     }
 
     public Map<String, Integer> getMapFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
         Map<String, Integer> resMap = new HashMap<>();
         try {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
@@ -190,21 +221,4 @@ public class DBUtil {
         return result;
     }
 
-    public Map<String, String> expandObject(Integer gid){
-        String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid.toString() + "\";";
-        Integer nodeType = getIntegerFromSQL(statement);
-        statement = "SELECT name FROM typeProperty WHERE id = \"" + nodeType.toString() + "\";";
-        List<String> properties = getListFromSQL(statement);
-        Map<String, String> result = new HashMap<>();
-        for(String property : properties){
-            if(nodeType == 0){
-                statement = "SELECT value FROM P_" + FileParser.RELATION_PREFIX + property + " WHERE gid = \"" + gid.toString() + "\";";
-            }else{
-                statement = "SELECT value FROM P_" + property + " WHERE gid = \"" + gid.toString() + "\";";
-            }
-            String val = getStringFromSQL(statement);
-            result.put(property, val);
-        }
-        return result;
-    }
 }

@@ -2,6 +2,7 @@ package Query.Plan;
 
 import Query.Engine.QueryIndexer;
 import Query.Entities.PlanTable;
+import Query.Entities.PlanTree;
 import Utility.Equality;
 
 import java.util.ArrayList;
@@ -31,8 +32,7 @@ public class NodeHashJoinPlan extends Plan {
         table.nodes.addAll(from.nodes);
         table.relations.addAll(from.relations);
         table.estimatedSize = this.estimatedSize;
-        table.plans.addAll(from.plans);
-        table.plans.add(this);
+        table.plans = PlanTree.Combine(from.plans, to.plans, this);
         super.applyTo(table);
     }
 

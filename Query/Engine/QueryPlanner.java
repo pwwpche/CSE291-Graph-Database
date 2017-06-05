@@ -36,6 +36,7 @@ public class QueryPlanner {
         this.equalityList = equalityList;
         this.pathList = pathList;
         this.retList = retList;
+        this.retPath = retPath;
         this.indexer = indexer;
     }
 
@@ -164,7 +165,7 @@ public class QueryPlanner {
 
             planTables.add(best);
 
-            for(Plan plan : best.plans){
+            for(Plan plan : best.plans.toList()){
                 removeRelated(plan);
             }
 
@@ -177,7 +178,7 @@ public class QueryPlanner {
 
 
         PlanTable bestPlan = planTables.get(0);
-        for(Plan plan : bestPlan.plans){
+        for(Plan plan : bestPlan.plans.toList()){
             System.out.println(plan.getName() + "|" + plan.getVariable() + "|" + plan.getParams());
         }
 

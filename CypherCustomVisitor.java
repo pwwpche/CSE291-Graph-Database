@@ -273,13 +273,13 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         if (ctx.relationshipTypes() != null) {
             Value res = this.visit(ctx.relationshipTypes());
             assert res.type.equals("List");
-            constraints.add(new Constraint("rel_type", "OR", res));
+            constraints.add(new Constraint("rel_type", "==", res));
 
         }
         if (ctx.rangeLiteral() != null) {
             Value res = this.visit(ctx.rangeLiteral());
             assert res.type.equals("Pair");
-            constraints.add(new Constraint("range", "Pair", res));
+            constraints.add(new Constraint("range", "in", res));
         }
         if (ctx.properties() != null) {
             Value result = this.visit(ctx.properties());

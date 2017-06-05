@@ -12,6 +12,7 @@ package Query.Entities;
         this.end = end;
         this.direction = direction;
         this.used = false;
+
     }
 
     @Override

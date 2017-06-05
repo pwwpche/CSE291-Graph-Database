@@ -52,6 +52,10 @@ public class    FilterConstraintPlan extends Plan {
         table.plans.add(this);
     }
 
+    public Constraint getConstraint(){
+        return this.varConstraint;
+    }
+
     @Override
     public String getParams() {
         return varConstraint.toString();

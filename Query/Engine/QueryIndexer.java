@@ -29,7 +29,7 @@ public class QueryIndexer {
     private Integer numberOfNodes = 0, numberOfRelations = 0;
     private DBUtil dbUtil;
 
-    public QueryIndexer(Connection conn, DBSchema dbSchema) {
+    public QueryIndexer(Connection conn) {
         this.conn = conn;
         this.dbUtil = new DBUtil(conn);
 
