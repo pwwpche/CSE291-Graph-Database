@@ -1,6 +1,6 @@
+import Entity.*;
 import Query.Engine.QueryIndexer;
 import Query.Engine.QueryPlanner;
-import Utility.*;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;

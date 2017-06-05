@@ -2,8 +2,8 @@ package Query.Plan;
 
 import Query.Engine.QueryIndexer;
 import Query.Entities.PlanTable;
-import Utility.Constraint;
-import Utility.Value;
+import Entity.Constraint;
+import Entity.Value;
 
 import java.util.List;
 

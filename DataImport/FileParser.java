@@ -1,6 +1,8 @@
-package Utility;
+package DataImport;
 
 
+import Utility.DBUtil;
+import Entity.Pair;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -44,11 +46,12 @@ public class FileParser {
     private Map<String, String> propertyToSQLType = new HashMap<>();
     private Integer globalId = 0;
     private DBUtil dbUtil;
-
+    private DBHandler handler;
 
     public FileParser(String fileName, Connection conn) {
         this.fileName = fileName;
         this.dbUtil = new DBUtil(conn);
+        this.handler = new DBHandler(dbUtil);
     }
 
     private Integer getUniqueGlobalId() {
@@ -289,8 +292,9 @@ public class FileParser {
         return Arrays.asList(edgeTableSchema.split(";"));
     }
 
-    public DBSchema run() throws IOException {
+    public void run() throws IOException {
 
+        System.out.println("Creating tables...");
         getMetadata();
 
         // Construct the set including all properties occurred,
@@ -349,7 +353,6 @@ public class FileParser {
         List<String> sqlSchema = constructMetaSchema();
         dbUtil.executeSQL(sqlSchema);
         sqlSchema = new ArrayList<>();
-
         // For each property, create a table for it.
         /*
             DROP TABLE IF EXISTS P_profileImageUrl;
@@ -398,8 +401,11 @@ public class FileParser {
                 sqlSchema.add(propSql);
             }
         }
-        dbUtil.executeSQL(sqlSchema);
 
+        dbUtil.executeSQL(sqlSchema);
+        System.out.println("Tables created.");
+
+        System.out.println("Importing data...");
         // Scan for each node and insertObject it into database.
         Map<String, Set<String>> usedIDs = new HashMap<>();
         for (String key : keyType.keySet()) {
@@ -436,25 +442,25 @@ public class FileParser {
                     String id = item.get("id").toString();
                     if(!usedIDs.get(type).contains(id)){
                         Integer gid = getUniqueGlobalId();
-                        dbUtil.insertObject(gid, item);
+                        handler.insertObject(gid, item);
                         usedIDs.get(type).add(id);
                         lineGidType.put(type, gid.toString());
                         newGid.put(type, gid);
                     }else{
-                        Integer gid = dbUtil.getGidBy("id", item.get("id").toString());
+                        Integer gid = handler.getGidBy("id", item.get("id").toString());
                         lineGidType.put(type, gid.toString());
                     }
                 } else {
                     // A relation object
-                    if(!dbUtil.checkExist(item)){
+                    if(!handler.checkExist(item)){
                         Integer gid = getUniqueGlobalId();
-                        dbUtil.insertObject(gid, item, RELATION_PREFIX);
-                        dbUtil.insertObjectType(gid.toString(), "0");
+                        handler.insertObject(gid, item, RELATION_PREFIX);
+                        handler.insertObjectType(gid.toString(), "0");
                         lineGidType.put(type, gid.toString());
                         newGid.put(type, gid);
 
                     }else{
-                        Integer gid = dbUtil.getGidBy(RELATION_PREFIX + "name", item.get("name").toString());
+                        Integer gid = handler.getGidBy(RELATION_PREFIX + "name", item.get("name").toString());
                         lineGidType.put(type, gid.toString());
                     }
                 }
@@ -472,8 +478,8 @@ public class FileParser {
 
                 if(newGid.containsKey(referredType)){
                     String gid = lineGidType.get(referredType);
-                    dbUtil.insertLabel(gid, items);
-                    dbUtil.insertObjectType(gid, typeIndex.toString());
+                    handler.insertLabel(gid, items);
+                    handler.insertObjectType(gid, typeIndex.toString());
                 }
             }
 
@@ -487,20 +493,10 @@ public class FileParser {
                     edgeObject.put(type, lineObject.get(type).toString());
                 }
             }
-            dbUtil.insertEdge(edgeObject);
+            handler.insertEdge(edgeObject);
         }
-
-        System.out.println(sqlSchema);
-
-        DBSchema dbSchema = new DBSchema();
-        dbSchema.fileName = this.fileName;
-        dbSchema.keyReference = this.keyReference;
-        dbSchema.keyType = this.keyType;
-        dbSchema.typeToProperties = this.typeToProperties;
-        dbSchema.globalPropertiesSet = this.globalNodeProperties;
-        dbSchema.nodelabelToType = this.nodelabelToType;
-        dbSchema.propertyToSQLType = this.propertyToSQLType;
-        return dbSchema;
+        System.out.println("Importing complete.");
+        return ;
     }
 
     public void run2(){

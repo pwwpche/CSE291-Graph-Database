@@ -1,7 +1,4 @@
-package Utility;
-
-import Utility.Constraint;
-import Utility.Value;
+package Entity;
 
 import java.util.ArrayList;
 import java.util.List;

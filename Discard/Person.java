@@ -1,9 +1,7 @@
-package Entities;
+package Discard;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.Date;
 
 /**
  * Created by liuche on 5/4/17.

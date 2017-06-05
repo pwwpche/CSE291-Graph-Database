@@ -1,4 +1,4 @@
-package Utility;
+package Entity;
 
 public class Pair<T1, T2> {
 

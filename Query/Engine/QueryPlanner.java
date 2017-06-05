@@ -1,12 +1,11 @@
 package Query.Engine;
 
+import Entity.*;
 import Query.Entities.PlanTable;
 import Query.Plan.*;
 import Query.Entities.RelationEdge;
-import Utility.*;
 
 import java.util.*;
-import java.util.logging.Filter;
 
 /**
  * Created by liuche on 5/28/17.

@@ -3,9 +3,9 @@ package Query.Plan;
 import Query.Engine.QueryIndexer;
 import Query.Entities.PlanTable;
 import Query.Entities.RelationEdge;
-import Utility.Constraint;
-import Utility.Pair;
-import Utility.QueryConstraints;
+import Entity.Constraint;
+import Entity.Pair;
+import Entity.QueryConstraints;
 
 import java.util.ArrayList;
 import java.util.List;

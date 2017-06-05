@@ -1,9 +1,6 @@
 package Utility;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +38,7 @@ public class DBUtil {
             if(statement.trim().length() > 0){
                 PreparedStatement preparedStatement = conn.prepareStatement(statement);
                 preparedStatement.execute();
+                preparedStatement.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -55,11 +53,11 @@ public class DBUtil {
             if(statements.size() == 0){
                 return ;
             }
-
             for(String stt : statements){
                 if(stt.trim().length() > 0){
                     PreparedStatement preparedStatement = conn.prepareStatement(stt);
                     preparedStatement.execute();
+                    preparedStatement.close();
                 }
             }
         } catch (SQLException e) {
@@ -77,7 +75,10 @@ public class DBUtil {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
             ResultSet result = preparedStatement.executeQuery();
             result.next();
-            return result.getInt(1);
+            Integer res =  result.getInt(1);
+            result.close();
+            preparedStatement.close();
+            return res;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -92,7 +93,10 @@ public class DBUtil {
             PreparedStatement preparedStatement = conn.prepareStatement(statement);
             ResultSet result = preparedStatement.executeQuery();
             result.next();
-            return result.getString(1);
+            String res = result.getString(1);
+            result.close();
+            preparedStatement.close();
+            return res;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -112,6 +116,8 @@ public class DBUtil {
                 String str = result.getString(1);
                 resList.add(str);
             }
+            result.close();
+            preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -131,94 +137,66 @@ public class DBUtil {
                 Integer integer = result.getInt(2);
                 resMap.put(str, integer);
             }
+            result.close();
+            preparedStatement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return resMap;
     }
 
-
-    public void insertObject(Integer gid, Map<String, Object> values){
-        String id = gid.toString();
-        for(String property : values.keySet()){
-            String sql = "INSERT INTO P_" + property + "(gid, value) VALUES (\"";
-            sql += id + "\", \"" + values.get(property).toString();
-            sql += "\");\n";
-            executeSQL(sql);
+    public Map<String, String> getObjectFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
         }
+        Map<String, String> map = new HashMap<>();
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement(statement);
+            ResultSet result = preparedStatement.executeQuery();
+            ResultSetMetaData metaData = result.getMetaData();
 
-    }
-
-    public void insertObjectType(String gid, String type){
-        String sql = "INSERT INTO ObjectType(gid, type) VALUES (" +
-                "\"" + gid + "\"," +
-                "\"" + type + "\");\n";
-        executeSQL(sql);
-    }
-
-    public void insertObject(Integer gid, Map<String, Object> values, String tablePrefix){
-        String id = gid.toString();
-        for(String property : values.keySet()){
-            String sql = "INSERT INTO P_" + tablePrefix + property + "(gid, value) VALUES (\"";
-            sql += id + "\", \"" ;
-            sql += values.get(property).toString() +  "\");\n";
-            executeSQL(sql);
-        }
-    }
-
-
-    public void insertLabel(String gid, List<String> labels){
-
-        for(String label : labels){
-            String sql = "INSERT INTO nodeLabel(gid, label) VALUES(" +
-                    "\"" + gid + "\"," +
-                    "\"" + label + "\"" +
-                    ");\n";
-            executeSQL(sql);
-        }
-    }
-
-
-    public void insertEdge(Map<String, String> item){
-        List<String> keySets = new ArrayList<>(item.keySet());
-        String sql = "INSERT INTO Edge(" + String.join(",", keySets) + ") VALUES(";
-        for(String key : keySets){
-            String value = item.get(key);
-            sql += "\"" + value + "\"" + ",";
-        }
-        sql = sql.substring(0, sql.length() - 1);
-        sql += ");\n";
-        executeSQL(sql);
-    }
-
-
-    public boolean checkExist(Map<String, Object> item){
-        boolean result;
-        for(String prop : item.keySet()){
-            String value = item.get(prop).toString();
-            String sql = "SELECT COUNT(*) FROM P_" + prop + " WHERE value = \"" + value + "\";\n";
-            result = getIntegerFromSQL(sql) > 0;
-            if(!result){
-                return false;
+            if(result.next()){
+                for(int i = 1, size = metaData.getColumnCount(); i <= size ; i++){
+                    String key = metaData.getColumnName(i);
+                    String value = result.getString(i);
+                    map.put(key, value);
+                }
             }
+            result.close();
+            preparedStatement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        return true;
+        return map;
     }
 
-    public Integer getGidBy(String prop, String value){
-        String sql = "SELECT gid FROM P_" + prop + " WHERE VALUE = \"" + value + "\";\n";
-        return getIntegerFromSQL(sql);
-    }
-
-    public List<Integer> getGidBy(String property, String value, boolean isNode){
-        String tablePrefix = isNode ? "" : FileParser.RELATION_PREFIX;
-        String sql = "SELECT gid FROM P_" + tablePrefix + property + " WHERE VALUE = \"" + value + "\";\n";
-        List<String> resStringList = getListFromSQL(sql);
-        List<Integer> result = new ArrayList<>();
-        for(String str : resStringList){
-            result.add(Integer.valueOf(str));
+    public List<Map<String, String>> getObjectListFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
         }
-        return result;
+        List<Map<String, String>> res = new ArrayList<>();
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement(statement);
+            ResultSet result = preparedStatement.executeQuery();
+            ResultSetMetaData metaData = result.getMetaData();
+
+            while(result.next()){
+                Map<String, String> map = new HashMap<>();
+                for(int i = 1, size = metaData.getColumnCount(); i <= size ; i++){
+                    String key = metaData.getColumnName(i);
+                    String value = result.getString(i);
+                    map.put(key, value);
+                }
+                res.add(map);
+            }
+            result.close();
+            preparedStatement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return res;
     }
 
 }

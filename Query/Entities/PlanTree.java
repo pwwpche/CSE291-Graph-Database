@@ -66,7 +66,7 @@ public class PlanTree {
 }
 
 //
-//package Query.Entities;
+//package Query.Discarded.Entities;
 //
 //import Query.Plan.Plan;
 //

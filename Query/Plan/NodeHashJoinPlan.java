@@ -3,7 +3,7 @@ package Query.Plan;
 import Query.Engine.QueryIndexer;
 import Query.Entities.PlanTable;
 import Query.Entities.PlanTree;
-import Utility.Equality;
+import Entity.Equality;
 
 import java.util.ArrayList;
 import java.util.List;

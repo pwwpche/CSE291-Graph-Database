@@ -1,4 +1,4 @@
-package Utility;
+package Entity;
 
 /**
  * Created by liuche on 5/28/17.
