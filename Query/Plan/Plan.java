@@ -11,6 +11,9 @@ public class Plan {
     protected double estimatedSize = 0;
     protected String variable = "";
 
+    public QueryIndexer getIndexer(){
+        return indexer;
+    }
 
     public Plan(QueryIndexer queryIndexer) {
         this.indexer = queryIndexer;

@@ -19,15 +19,14 @@ public class DBUtil {
     }
 
     public void startRecording(){
+        executeHistory.clear();
         this.recording = true;
     }
 
-    public void stopRecording(){
+    public List<String> stopAndReturn(){
+        List<String> result = new ArrayList<>(executeHistory);
         this.recording = false;
-    }
-
-    public List<String> getExecuteHistory(){
-        return this.executeHistory;
+        return result;
     }
 
     public void executeSQL(String statement){

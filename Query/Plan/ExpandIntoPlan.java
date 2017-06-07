@@ -53,6 +53,7 @@ public class ExpandIntoPlan extends Plan {
                 List<String> types = (List<String>) constraint.value.val;
                 relations.addAll(types);
             }
+
         }
 
         // Size estimation for (a:A:B)-[r:R1|R2]->(b:D:E)
@@ -132,6 +133,7 @@ public class ExpandIntoPlan extends Plan {
         super.applyTo(table);
     }
 
+
     @Override
     public String getParams() {
         return "-[" + edge.name + cons.toString() + "]-(" + edge.end + ")";
@@ -150,4 +152,6 @@ public class ExpandIntoPlan extends Plan {
     public RelationEdge getRelationEdge(){
         return this.edge;
     }
+
+    public QueryConstraints getCons() {return this.cons;}
 }

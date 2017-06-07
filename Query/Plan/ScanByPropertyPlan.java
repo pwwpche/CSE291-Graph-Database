@@ -5,10 +5,11 @@ import Query.Entities.PlanTable;
 
 /**
  * Created by liuche on 5/29/17.
+ *
  */
 public class ScanByPropertyPlan extends Plan {
-    String property;
-    String value;
+    private String property;
+    private String value;
     public ScanByPropertyPlan(QueryIndexer queryIndexer, String node, String property, String val) {
         super(queryIndexer);
         this.variable = node;
@@ -25,6 +26,13 @@ public class ScanByPropertyPlan extends Plan {
         table.plans.add(this);
     }
 
+    public String getProperty(){
+        return property;
+    }
+
+    public String getValue(){
+        return value;
+    }
     @Override
     public String getParams() {
         return property + "=" + value;

@@ -37,6 +37,10 @@ public class ScanByLabelPlan extends Plan {
         return res;
     }
 
+    public List<String> getLabels(){
+        return labels;
+    }
+
     @Override
     public String getVariable(){
         return super.getVariable();

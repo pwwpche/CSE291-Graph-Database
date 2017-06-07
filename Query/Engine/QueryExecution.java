@@ -1,9 +1,7 @@
 package Query.Engine;
 
 import Query.Entities.PlanTree;
-import Query.Execution.AllNodeScanExec;
-import Query.Execution.Execution;
-import Query.Execution.ResultTable;
+import Query.Execution.*;
 import Query.Plan.*;
 import Utility.DBUtil;
 
@@ -31,13 +29,13 @@ public class QueryExecution {
         List<Execution> executionList = new ArrayList<>();
         for(Plan plan : tree.toList()){
             if(plan instanceof AllNodeScanPlan){
-
+                executionList.add(new AllNodeScanExec(dbUtil, plan));
             }else if(plan instanceof ScanByLabelPlan){
-
+                executionList.add(new ScanByLabelExec(dbUtil, plan));
             }else if(plan instanceof ScanByPropertyPlan){
-
+                executionList.add(new ScanByPropertyExec(dbUtil, plan));
             }else if(plan instanceof ScanByIdPlan){
-
+                executionList.add(new ScanByIdExec(dbUtil, plan));
             }else if(plan instanceof ExpandIntoPlan){
 
             }else if(plan instanceof ExpandAllPlan){

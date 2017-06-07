@@ -1,6 +1,6 @@
 package Query.Execution;
 
-import Query.Plan.AllNodeScanPlan;
+import Query.Plan.Plan;
 import Utility.DBUtil;
 
 /**
@@ -8,19 +8,20 @@ import Utility.DBUtil;
  */
 public class AllNodeScanExec extends Execution{
 
-    public AllNodeScanExec(DBUtil util, AllNodeScanPlan plan) {
+    public AllNodeScanExec(DBUtil util, Plan plan) {
         super(util, plan);
         this.operandCount = 0;
     }
 
     @Override
     public ResultTable execute() {
-        this.dbUtil.startRecording();
+        this.exeUtil.startRecording();
         ResultTable table = new ResultTable();
-        table.idTable.put(ResultTable.GID, getAllNodeGid());
-        this.dbUtil.stopRecording();
-        this.querySQL = this.dbUtil.getExecuteHistory();
+        table.putAll(plan.getVariable(), exeUtil.getAllNodes());
+        this.querySQL = this.exeUtil.getHistory();
         return table;
     }
+
+
 
 }
