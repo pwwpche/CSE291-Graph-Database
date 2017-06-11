@@ -29,6 +29,32 @@ public class DBUtil {
         return result;
     }
 
+    private List<String> batchStat = new ArrayList<>();
+
+    public void batchExecute(String statement){
+        if(batchStat.size() < 1000){
+            batchStat.add(statement);
+        }else{
+            dumpBatch();
+        }
+    }
+
+    public void dumpBatch(){
+        try {
+            Statement sqlStat = conn.createStatement();
+            for (String query : batchStat) {
+                if(query.trim().length() > 0){
+                    sqlStat.addBatch(query);
+                }
+            }
+            sqlStat.executeBatch();
+            sqlStat.close();
+            batchStat.clear();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void executeSQL(String statement){
         if(recording){
             executeHistory.add(statement);
@@ -169,6 +195,35 @@ public class DBUtil {
         }
         return map;
     }
+
+    public Map<String, List<String>> getTableFromSQL(String statement){
+        if(recording){
+            executeHistory.add(statement);
+        }
+        Map<String, List<String>> map = new HashMap<>();
+        try {
+            PreparedStatement preparedStatement = conn.prepareStatement(statement);
+            ResultSet result = preparedStatement.executeQuery();
+            ResultSetMetaData metaData = result.getMetaData();
+            for(int i = 1, size = metaData.getColumnCount(); i <= size ; i++){
+                String key = metaData.getColumnName(i);
+                map.put(key, new ArrayList<>());
+            }
+            while(result.next()){
+                for(int i = 1, size = metaData.getColumnCount(); i <= size ; i++){
+                    String key = metaData.getColumnName(i);
+                    map.get(key).add(result.getString(i));
+                }
+            }
+            result.close();
+            preparedStatement.close();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return map;
+    }
+
 
     public List<Map<String, String>> getObjectListFromSQL(String statement){
         if(recording){

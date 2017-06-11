@@ -3,15 +3,19 @@ package DataImport;
 
 import Utility.DBUtil;
 import Entity.Pair;
+import com.sangupta.bloomfilter.impl.InMemoryBloomFilter;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by liuche on 6/1/17.
@@ -27,26 +31,29 @@ import java.util.regex.Pattern;
  * 4. Objects with "ID" field are considered a node, and ID should be
  * unique with in the same type (nodes with same labels) of nodes.
  * Objects without "ID" filed are considered relation objects.
- *
- * 5. All relation objects are of same schema. Typeid is 0.
- *
+ * <p>
+ * 5. Relation objects are empty
+ * <p>
  * Additional requirement is in QueryIndexer.
+ *
+ * 6. Use UTF8_GENERAL_CI on text field
+ *    ALTER TABLE test.P_text MODIFY COLUMN value TEXT
+ *    CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;
  */
 public class FileParser {
-    public static final String RELATION_PREFIX = "RELATION_";
     private String fileName = "";
     private Map<String, String> keyType = new HashMap<>();
     private Map<String, String> keyReference = new HashMap<>();
 
     // Data structures only used in run()
-    private Map<Integer, Set<String>> typeToProperties = new HashMap<>();
-    private Set<String> globalNodeProperties = new HashSet<>();
-    private Set<String> globalRelationProperties = new HashSet<>();
-    private Map<Set<String>, Integer> nodelabelToType = new HashMap<>();
+    private Map<String, Set<String>> typeToProperties = new HashMap<>();
+    private Set<String> globalProperties = new HashSet<>();
+    private Map<Set<String>, String> nodelabelToType = new HashMap<>();
     private Map<String, String> propertyToSQLType = new HashMap<>();
     private Integer globalId = 0;
     private DBUtil dbUtil;
     private DBHandler handler;
+
 
     public FileParser(String fileName, Connection conn) {
         this.fileName = fileName;
@@ -61,9 +68,10 @@ public class FileParser {
     }
 
     private void getMetadata() throws IOException {
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
+
         //Read file schema
-        String schemaLine = br.readLine().replaceAll("[\"{} ]", "");
+        String lineMeta = "{node1: n, node1Label: labels(n), relationship: r, rel_type: type(r), node2:m, node2Label: labels(m)}";
+        String schemaLine = lineMeta.replaceAll("[\"{} ]", "");
         String objects[] = schemaLine.split(",");
         Map<String, String> valToKey = new HashMap<>();
 
@@ -76,7 +84,7 @@ public class FileParser {
             String valType = objVal.matches("[A-Za-z0-9]+") ? "object" : (
                     objVal.contains("(") ? "list" : "string"
             );
-            valType = ((objName.toLowerCase().contains("node")) ? "node_" : "relation_" ) + valType;
+            valType = ((objName.toLowerCase().contains("node")) ? "node_" : "relation_") + valType;
             keyType.put(objName, valType);
             valToKey.put(objVal, objName);
         }
@@ -95,13 +103,30 @@ public class FileParser {
             }
         }
 
-        br.close();
     }
 
     private Map<String, Object> lineToJsonMap(String line) {
-        line = replaceQuote(line);
+        //line = replaceQuote(line);
         JSONObject object = new JSONObject(line);
-        return JsonParser.toMap(object);
+
+        Map<String, Object> objectMap = JsonParser.toMap(object);
+        List<Map<String, Object>> rowList = (List<Map<String, Object>>) objectMap.get("row");
+        List<Map<String, String>> metaList = (List<Map<String, String>>) objectMap.get("meta");
+        Map<String, Object> result = rowList.get(0);
+        List<String> ids = new ArrayList<>();
+        for (int i = 0, size = metaList.size(); i < size; i++) {
+            if (JSONObject.NULL.equals(metaList.get(i))) {
+                continue;
+            }
+            Map<String, String> metaMap = metaList.get(i);
+            if (metaMap.containsKey("id") && "node".equals(metaMap.get("type"))) {
+                ids.add(metaMap.get("id"));
+            }
+        }
+        assert result.get("node1") instanceof Map;
+        ((Map<String, String>) (result.get("node1"))).put("id", ids.get(0));
+        ((Map<String, String>) (result.get("node2"))).put("id", ids.get(1));
+        return result;
     }
 
     private String replaceQuote(String str) {
@@ -136,11 +161,10 @@ public class FileParser {
     *
     * */
 
-    private Map<String, List<Pair<String, String>>> getObjectProperties(String line) throws IOException {
+    private Map<String, List<Pair<String, String>>> getNodePropSQL(Map<String, Object> map) throws IOException {
         Map<String, List<Pair<String, String>>> keyProperties = new HashMap<>();
-        Map<String, Object> map = lineToJsonMap(line);
         for (String key : map.keySet()) {
-            if (keyType.get(key).contains("object")) {
+            if (keyType.get(key).contains("object") && keyType.get(key).contains("node")) {
                 Map<String, Object> objectMap = (Map<String, Object>) map.get(key);
                 List<String> propertyList = new ArrayList<>(objectMap.keySet());
                 List<Pair<String, String>> typeList = new ArrayList<>();
@@ -154,76 +178,14 @@ public class FileParser {
     }
 
 
-    private List<String> generateSQLTableSchema(Map<String, List<Pair<String, String>>> keyProperties) {
-        List<String> result = new ArrayList<>();
-
-        // Create table for edges
-        List<String> edgeSchema = new ArrayList<>();
-        List<String> referenceSchema = new ArrayList<>();
-        List<String> indexSchema = new ArrayList<>();
-        edgeSchema.add("CREATE TABLE Edge(");
-        edgeSchema.add("gid VARCHAR(64),");
-        for (String tableName : keyType.keySet()) {
-            if (keyType.get(tableName).contains("object")) {
-                edgeSchema.add("id" + tableName + " VARCHAR(255),");
-                referenceSchema.add("FOREIGN KEY (id" + tableName +
-                        ") REFERENCES " + tableName + "(gid),");
-                indexSchema.add("CREATE INDEX idx_Edge_id" + tableName +
-                        " ON Edge(id" + tableName + ");"
-                );
-            }
-        }
-        edgeSchema.addAll(referenceSchema);
-        edgeSchema.add("PRIMARY KEY (gid)");
-        edgeSchema.addAll(indexSchema);
-        result.add(String.join("\n", edgeSchema));
-
-
-        for (String tableName : keyType.keySet()) {
-            List<String> schemaStr = new ArrayList<>();
-            schemaStr.add("CREATE TABLE " + tableName + " (");
-            if (keyType.get(tableName).contains("List")) {      // Label table
-                schemaStr.add("gid VARCHAR(64),");
-                schemaStr.add("label VARCHAR(255), ");
-                schemaStr.add("FOREIGN KEY (gid) REFERENCES " + keyReference.get(tableName) + "(gid)");
-                schemaStr.add(");");
-                schemaStr.add("CREATE INDEX idx_" + tableName + "_gid ON " + tableName + "(gid);");
-                schemaStr.add("CREATE INDEX idx_" + tableName + "_gid ON " + tableName + "(gid);");
-            } else if (keyType.get(tableName).contains("object")) {
-                boolean hasId = false;
-                schemaStr.add("gid VARCHAR(64),");
-                List<Pair<String, String>> properties = keyProperties.get(tableName);
-                for (Pair<String, String> property : properties) {
-                    hasId = hasId || (property.getV0().equals("id"));
-                    schemaStr.add(property.getV0() + " " + property.getV1() + ",");
-                }
-                if (hasId) {
-                    schemaStr.add("KEY (id),");
-                }
-                schemaStr.add("PRIMARY KEY (gid)");
-                schemaStr.add(");");
-                if (hasId) {
-                    schemaStr.add("CREATE INDEX idx_" + tableName + "_id ON " + tableName + "(id)");
-                }
-                schemaStr.add("CREATE INDEX idx_" + tableName + "_gid ON " + tableName + "(gid)");
-            } else {
-                assert false;
-            }
-            result.add(String.join("\n", schemaStr));
-        }
-        return result;
-    }
-
     /*
-    * true -> {"name", "id", "birthplace", "duration", "studio"...},
-    * false -> {"name"}
+    *  -> {"name", "id", "birthplace", "duration", "studio"...},
     * */
-    private Set<String> getAllProperties(String line, boolean isNode) {
-        String nodeOrRelation = isNode ? "node" : "relation";
+
+    private Set<String> getAllProperties(Map<String, Object> map) {
         Set<String> res = new HashSet<>();
-        Map<String, Object> map = lineToJsonMap(line);
         for (String key : map.keySet()) {
-            if (keyType.get(key).contains("object") && keyType.get(key).contains(nodeOrRelation) ) {
+            if (keyType.get(key).contains("object") && keyType.get(key).contains("node")) {
                 Map<String, Object> objectMap = (Map<String, Object>) map.get(key);
                 res.addAll(objectMap.keySet());
             }
@@ -234,15 +196,13 @@ public class FileParser {
     /*
     *   {
     *   "node1Label" : {"Person", "Actor"}
-    *
     *   }
     * */
-    private Map<String, Set<String>> getNodeLabelSet(String line) {
-        Map<String, Object> jsonMap = lineToJsonMap(line);
+    private Map<String, Set<String>> getNodeLabelSet(Map<String, Object> map) {
         Map<String, Set<String>> res = new HashMap<>();
-        for (String key : jsonMap.keySet()) {
-            if (keyType.get(key).contains("list") && (jsonMap.get(key) instanceof List)) {
-                List<String> labelList = (List<String>) (jsonMap.get(key));
+        for (String key : map.keySet()) {
+            if (keyType.get(key).contains("list") && (map.get(key) instanceof List)) {
+                List<String> labelList = (List<String>) (map.get(key));
                 res.put(key, new HashSet<>(labelList));
             }
         }
@@ -252,6 +212,7 @@ public class FileParser {
     private List<String> constructMetaSchema() {
         String predefinedTableSchema = "" +
                 "DROP TABLE IF EXISTS typeProperty;\n" +
+                "DROP TABLE IF EXISTS typeLabel;\n" +
                 "DROP TABLE IF EXISTS nodeLabel;\n" +
                 "DROP TABLE IF EXISTS Edge;\n" +
                 "DROP TABLE IF EXISTS ObjectType;\n" +
@@ -268,6 +229,13 @@ public class FileParser {
                 ");\n" +
                 "\n" +
                 "CREATE INDEX idx_typeProperty_id ON typeProperty(id);\n" +
+                "\n" +
+                "CREATE TABLE typeLabel(\n" +
+                "  id VARCHAR(64),\n" +
+                "  label VARCHAR(255)\n" +
+                ");\n" +
+                "\n" +
+                "CREATE INDEX idx_typeLabel_id ON typeLabel(id);\n" +
                 "\n" +
                 "CREATE TABLE nodeLabel(\n" +
                 "  gid VARCHAR(64),\n" +
@@ -289,71 +257,81 @@ public class FileParser {
         for (String key : keyType.keySet()) {
             edgeTableSchema += "CREATE INDEX idx_Edge_" + key + " ON Edge(" + key + ");\n";
         }
-        return Arrays.asList(edgeTableSchema.split(";"));
+        List<String> ret = Arrays.asList(edgeTableSchema.split(";"));
+        List<String> result = new ArrayList<>();
+        for (String s : ret) {
+            if(s.trim().length() > 0){
+                result.add(s + ";\n");
+            }
+
+        }
+        return result;
     }
 
     public void run() throws IOException {
-
         System.out.println("Creating tables...");
         getMetadata();
-
+        MyBufferedReader br = new MyBufferedReader(fileName);
         // Construct the set including all properties occurred,
         // and map from label to type id and property set.
         // Distinguish node property from edge property.
-        BufferedReader br = new BufferedReader(new FileReader(fileName));
-        br.readLine();
+
         String line;
+        if(true) {
+            // All relations are of type 0.
+            // Typeid of nodes starts from 1.
+            int typeId = 1;
+            int count0 = 0;
 
+            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter("tables.sql"));
 
-        // All relations are of type 0.
-        // Typeid of nodes starts from 1.
-        int typeId = 1;
+            while ((line = br.readLine()) != null) {
+                if (count0++ % 10000 == 0) {
+                    System.out.println(count0);
+                }
+                // Get all properties of this line, including all nodes and relations
+                Map<String, Object> lineMap = lineToJsonMap(line);
+                Set<String> nodeProperties = getAllProperties(lineMap);
 
-        while ((line = br.readLine()) != null) {
+                globalProperties.addAll(nodeProperties);
 
-            // Get all properties of this line, including all nodes and relations
-            Set<String> nodeProperties = getAllProperties(line, true);
-            Set<String> relationProperties = getAllProperties(line, false);
+                // Get all labels of objects in this line
+                Map<String, Set<String>> labelToSet = getNodeLabelSet(lineMap);
+                Map<String, List<Pair<String, String>>> propSQLType = getNodePropSQL(lineMap);
 
-            globalNodeProperties.addAll(nodeProperties);
-            globalRelationProperties.addAll(relationProperties);
-
-            // Get all labels of objects in this line
-            Map<String, Set<String>> labelToSet = getNodeLabelSet(line);
-            Map<String, List<Pair<String, String>>> propSQLType = getObjectProperties(line);
-
-            for (String key : propSQLType.keySet()) {
-                if (keyType.get(key).contains("object")) {
+                for (String key : propSQLType.keySet()) {
                     propSQLType.get(key).forEach(
                             kvPair -> propertyToSQLType.put(kvPair.getV0(), kvPair.getV1())
                     );
                 }
-            }
 
 
+                for (String key : labelToSet.keySet()) {
+                    // Add currently not occurred label to type map.
+                    Set<String> labelSet = labelToSet.get(key);
+                    String nodeName = keyReference.get(key);
+                    Set<String> typePropSet = new HashSet<>();
+                    propSQLType.get(nodeName).forEach(kvPair -> typePropSet.add(kvPair.getV0()));
+                    String typeIndex = nodelabelToType.getOrDefault(labelSet, "");
+                    if (typeIndex.equals("")) {
+                        typeId++;
+                        typeIndex = Integer.toString(typeId);
+                        nodelabelToType.put(labelSet, typeIndex);
+                    }
 
-            for (String key : labelToSet.keySet()) {
-                // Add currently not occurred label to type map.
-                Set<String> labelSet = labelToSet.get(key);
-                String nodeName = keyReference.get(key);
-                Set<String> typePropSet = new HashSet<>();
-                propSQLType.get(nodeName).forEach(kvPair -> typePropSet.add(kvPair.getV0()));
-                Integer typeIndex = nodelabelToType.getOrDefault(labelSet, -1);
-                if (typeIndex.equals(-1)) {
-                    typeIndex = typeId++;
-                    nodelabelToType.put(labelSet, typeIndex);
+                    typeToProperties.put(typeIndex, typePropSet);
                 }
-
-                typeToProperties.put(typeIndex, typePropSet);
             }
-        }
-        br.close();
+            br.close();
 
-        typeToProperties.put(0, globalRelationProperties);
-        List<String> sqlSchema = constructMetaSchema();
-        dbUtil.executeSQL(sqlSchema);
-        sqlSchema = new ArrayList<>();
-        // For each property, create a table for it.
+            List<String> sqlSchema = constructMetaSchema();
+            dbUtil.executeSQL(sqlSchema);
+            for(String str : sqlSchema){
+                bufferedWriter.write(str);
+            }
+            sqlSchema = new ArrayList<>();
+
+            // For each property, create a table for it.
         /*
             DROP TABLE IF EXISTS P_profileImageUrl;
             CREATE TABLE P_profileImageUrl(
@@ -364,71 +342,88 @@ public class FileParser {
             CREATE INDEX idx_p_profileImageUrl_gid ON P_profileImageUrl(gid);
         */
 
-        for (String prop : globalNodeProperties) {
-            sqlSchema.add("\nDROP TABLE IF EXISTS P_" + prop + ";\n");
-            sqlSchema.add("CREATE TABLE P_" + prop + "(\n" +
-                            "gid VARCHAR(64),\n" +
-                            "value " + propertyToSQLType.get(prop) + ",\n" +
-                            "PRIMARY KEY (gid)\n" +
-                            ");\n");
-            sqlSchema.add("CREATE INDEX idx_p_" + prop + "_gid ON P_" + prop + "(gid);\n");
-        }
-
-        for (String prop : globalRelationProperties) {
-            String propRenamed = RELATION_PREFIX + prop;
-            sqlSchema.add("\nDROP TABLE IF EXISTS P_" + propRenamed + ";\n");
-            sqlSchema.add("CREATE TABLE P_" + propRenamed + "(\n" +
-                    "gid VARCHAR(64),\n" +
-                    "value " + propertyToSQLType.get(prop) + ",\n" +
-                    "PRIMARY KEY (gid)\n" +
-                    ");\n");
-            sqlSchema.add("CREATE INDEX idx_p_" + propRenamed + "_gid ON P_" + propRenamed + "(gid);\n");
-        }
+            for (String prop : globalProperties) {
+                sqlSchema.add("\nDROP TABLE IF EXISTS P_" + prop + ";\n");
+                sqlSchema.add("CREATE TABLE P_" + prop + "(\n" +
+                        "gid VARCHAR(64),\n" +
+                        "value " + propertyToSQLType.get(prop) + ",\n" +
+                        "PRIMARY KEY (gid)\n" +
+                        ");\n");
+                sqlSchema.add("CREATE INDEX idx_p_" + prop + "_gid ON P_" + prop + "(gid);\n");
+            }
 
 
-        // Construct Type Table
+            // Construct Type Table
         /*
             INSERT INTO typeProperty(id, name) VALUES （ "2", "deg");
             INSERT INTO typeProperty(id, name) VALUES （ "2", "name");
             INSERT INTO typeProperty(id, name) VALUES （ "2", "lastModified");
         */
 
-        for (Integer key : typeToProperties.keySet()) {
-            String baseSql = "INSERT INTO typeProperty(id, name) VALUES (\""
-                    + key.toString() + "\", ";
-            for (String prop : typeToProperties.get(key)) {
-                String propSql = baseSql + "\"" + prop + "\");\n";
-                sqlSchema.add(propSql);
+            for (String key : typeToProperties.keySet()) {
+                String baseSql = "INSERT INTO typeProperty(id, name) VALUES (\""
+                        + key.toString() + "\", ";
+                for (String prop : typeToProperties.get(key)) {
+                    String propSql = baseSql + "\"" + prop + "\");\n";
+                    sqlSchema.add(propSql);
+                }
             }
+
+            // Construct Type Label Table
+        /*
+            INSERT INTO typeLabel(id, label) VALUES （ "2", "actor");
+            INSERT INTO typeLabel(id, label) VALUES （ "2", "person");
+            INSERT INTO typeLabel(id, label) VALUES （ "1", "tweet");
+        */
+            for (Set<String> set : nodelabelToType.keySet()) {
+                String baseSql = "INSERT INTO typeLabel(id, label) VALUES (\""
+                        + nodelabelToType.get(set) + "\", ";
+                for (String label : set) {
+                    String propSql = baseSql + "\"" + label + "\");\n";
+                    sqlSchema.add(propSql);
+                }
+            }
+
+            dbUtil.executeSQL(sqlSchema);
+            System.out.println("Tables created.");
+            for(String str : sqlSchema){
+                bufferedWriter.write(str);
+            }
+            bufferedWriter.close();
+        }else{
+           nodelabelToType = handler.getNodeLabelType();
         }
 
-        dbUtil.executeSQL(sqlSchema);
-        System.out.println("Tables created.");
 
         System.out.println("Importing data...");
-        // Scan for each node and insertObject it into database.
-        Map<String, Set<String>> usedIDs = new HashMap<>();
-        for (String key : keyType.keySet()) {
-            if (keyType.get(key).contains("object")){
-                usedIDs.put(key, new HashSet<>());
-            }
-        }
+        br = new MyBufferedReader(fileName);
 
-        br = new BufferedReader(new FileReader(fileName));
-        br.readLine();
+        // Scan for each node and insert it into database.
+        Map<String, String> usedNodeIds = new HashMap<>();
+        Integer[] gidTable = new Integer[7000000];
+        for(int i = 0 ; i < 7000000 ; i++){
+            gidTable[i] = -1;
+        }
+        InMemoryBloomFilter<String> filter = new InMemoryBloomFilter<>(7000000, 0.01);
+
+        int count = 0;
         while ((line = br.readLine()) != null) {
+            if (count % 1000 == 0) {
+                System.out.println(count);
+            }
+            count++;
             Map<String, Object> lineObject = lineToJsonMap(line);
             Map<String, String> lineGidType = new HashMap<>();
             Map<String, Integer> newGid = new HashMap<>();
 
             // Process nodes first.
             for (String type : lineObject.keySet()) {
-                if (!keyType.get(type).contains("object")) {
+                if (!keyType.get(type).contains("object") || !keyType.get(type).contains("node")) {
                     continue;
                 }
                 Map<String, Object> item = (Map<String, Object>) lineObject.get(type);
 
-                if(item.size() == 0){
+                if (item.size() == 0) {
                     //An empty object
                     //Only relation object could be empty.
                     assert !type.contains("node");
@@ -436,70 +431,74 @@ public class FileParser {
                     continue;
                 }
 
-                // A node object
-                if (item.keySet().contains("id")) {
-                    //Node1 or node2?
+                if (item.containsKey("id")) {
                     String id = item.get("id").toString();
-                    if(!usedIDs.get(type).contains(id)){
-                        Integer gid = getUniqueGlobalId();
-                        handler.insertObject(gid, item);
-                        usedIDs.get(type).add(id);
-                        lineGidType.put(type, gid.toString());
-                        newGid.put(type, gid);
-                    }else{
-                        Integer gid = handler.getGidBy("id", item.get("id").toString());
-                        lineGidType.put(type, gid.toString());
-                    }
-                } else {
-                    // A relation object
-                    if(!handler.checkExist(item)){
-                        Integer gid = getUniqueGlobalId();
-                        handler.insertObject(gid, item, RELATION_PREFIX);
-                        handler.insertObjectType(gid.toString(), "0");
-                        lineGidType.put(type, gid.toString());
-                        newGid.put(type, gid);
 
+                    if(item.containsKey("text")){
+                        // For tweets, use BloomFilter to find if it exists.
+                        if(filter.contains(id)) {
+                            String gid = handler.getUniqueGidBy("id", id);
+                            if (!("".equals(gid))) {
+                                continue;
+                            }
+                        }
+                        String value = item.get("text").toString();
+                        byte[] ptext = value.getBytes(ISO_8859_1);
+                        value = new String(ptext, UTF_8);
+                        item.put("text", value);
+
+                        String gid = getUniqueGlobalId().toString();
+                        handler.insertObject(gid, item);
+                        lineGidType.put(type, gid);
+                        newGid.put(type, Integer.valueOf(gid));
                     }else{
-                        Integer gid = handler.getGidBy(RELATION_PREFIX + "name", item.get("name").toString());
-                        lineGidType.put(type, gid.toString());
+                        if (usedNodeIds.containsKey(id)) {
+                            String gid = usedNodeIds.get(id);
+                            lineGidType.put(type, gid);
+                        } else {
+                            Integer gid = getUniqueGlobalId();
+                            handler.insertObject(gid.toString(), item);
+                            usedNodeIds.put(id, gid.toString());
+                            lineGidType.put(type, gid.toString());
+                            newGid.put(type, gid);
+                        }
                     }
+
                 }
             }
 
             //Then process labels
-            for(String type : lineObject.keySet()){
-                if(!keyType.get(type).contains("list")){
+            for (String type : lineObject.keySet()) {
+                if (!keyType.get(type).contains("list")) {
                     continue;
                 }
                 List<String> items = (List<String>) lineObject.get(type);
                 String referredType = keyReference.get(type);
-                Integer typeIndex = nodelabelToType.get(new HashSet<>(items));
-                lineGidType.put(type, typeIndex.toString());
+                String typeIndex = nodelabelToType.get(new HashSet<>(items));
+                lineGidType.put(type, typeIndex);
 
-                if(newGid.containsKey(referredType)){
+                if (newGid.containsKey(referredType)) {
                     String gid = lineGidType.get(referredType);
                     handler.insertLabel(gid, items);
-                    handler.insertObjectType(gid, typeIndex.toString());
+                    handler.insertObjectType(gid, typeIndex);
                 }
             }
 
 
             // Finally insert edge
             Map<String, String> edgeObject = new HashMap<>();
-            for(String type : lineObject.keySet()){
-                if(keyType.get(type).contains("list") || keyType.get(type).contains("object")){
+            for (String type : lineObject.keySet()) {
+                if (keyType.get(type).contains("list") || keyType.get(type).contains("object")) {
                     edgeObject.put(type, lineGidType.get(type));
-                }else{
+                } else {
                     edgeObject.put(type, lineObject.get(type).toString());
                 }
             }
             handler.insertEdge(edgeObject);
         }
+        handler.finish();
         System.out.println("Importing complete.");
-        return ;
-    }
-
-    public void run2(){
 
     }
+
 }

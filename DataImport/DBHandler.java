@@ -2,9 +2,11 @@ package DataImport;
 
 import Utility.DBUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.Charset;
+import java.util.*;
+
+import static java.nio.charset.StandardCharsets.ISO_8859_1;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by liuche on 6/5/17.
@@ -16,33 +18,27 @@ public class DBHandler {
         this.util = util;
     }
 
-    public void insertObject(Integer gid, Map<String, Object> values){
-        String id = gid.toString();
+    public void insertObject(String gid, Map<String, Object> values){
         for(String property : values.keySet()){
+            String value = values.get(property).toString();
             String sql = "INSERT INTO P_" + property + "(gid, value) VALUES (\"";
-            sql += id + "\", \"" + values.get(property).toString();
+            sql += gid + "\", \"" + value;
             sql += "\");\n";
-            util.executeSQL(sql);
+            util.batchExecute(sql);
         }
-
     }
+    public void finish(){
+        util.dumpBatch();
+    }
+
 
     public void insertObjectType(String gid, String type){
         String sql = "INSERT INTO ObjectType(gid, type) VALUES (" +
                 "\"" + gid + "\"," +
                 "\"" + type + "\");\n";
-        util.executeSQL(sql);
+        util.batchExecute(sql);
     }
 
-    public void insertObject(Integer gid, Map<String, Object> values, String tablePrefix){
-        String id = gid.toString();
-        for(String property : values.keySet()){
-            String sql = "INSERT INTO P_" + tablePrefix + property + "(gid, value) VALUES (\"";
-            sql += id + "\", \"" ;
-            sql += values.get(property).toString() +  "\");\n";
-            util.executeSQL(sql);
-        }
-    }
 
 
     public void insertLabel(String gid, List<String> labels){
@@ -52,7 +48,7 @@ public class DBHandler {
                     "\"" + gid + "\"," +
                     "\"" + label + "\"" +
                     ");\n";
-            util.executeSQL(sql);
+            util.batchExecute(sql);
         }
     }
 
@@ -66,7 +62,7 @@ public class DBHandler {
         }
         sql = sql.substring(0, sql.length() - 1);
         sql += ");\n";
-        util.executeSQL(sql);
+        util.batchExecute(sql);
     }
 
 
@@ -83,14 +79,13 @@ public class DBHandler {
         return true;
     }
 
-    public Integer getGidBy(String prop, String value){
+    public String getUniqueGidBy(String prop, String value){
         String sql = "SELECT gid FROM P_" + prop + " WHERE VALUE = \"" + value + "\";\n";
-        return util.getIntegerFromSQL(sql);
+        return util.getStringFromSQL(sql);
     }
 
-    public List<Integer> getGidBy(String property, String value, boolean isNode){
-        String tablePrefix = isNode ? "" : FileParser.RELATION_PREFIX;
-        String sql = "SELECT gid FROM P_" + tablePrefix + property + " WHERE VALUE = \"" + value + "\";\n";
+    public List<Integer> getGidBy(String property, String value){
+        String sql = "SELECT gid FROM P_" + property + " WHERE VALUE = \"" + value + "\";\n";
         List<String> resStringList = util.getListFromSQL(sql);
         List<Integer> result = new ArrayList<>();
         for(String str : resStringList){
@@ -99,4 +94,32 @@ public class DBHandler {
         return result;
     }
 
+    public boolean checkExist(String prop, String value){
+        String statement = "SELECT COUNT(*) FROM P_" + prop + " WHERE value = \"" + value + "\";";
+        return util.getIntegerFromSQL(statement) != 0;
+    }
+
+
+    public Integer getGidByAll(Map<String, String> properties, boolean isNode){
+        return 0;
+    }
+
+    public Map<Set<String>,String> getNodeLabelType() {
+        String statement = "SELECT * FROM typeLabel;";
+        Map<String, List<String>> res = util.getTableFromSQL(statement);
+        List<String> ids = res.get("id");
+        List<String> labels = res.get("label");
+
+        Map<String, Set<String> > typeLabel = new HashMap<>();
+        for(int i = 0 , size = ids.size() ; i < size ; i++){
+            String id = ids.get(i), label = labels.get(i);
+            if(!typeLabel.containsKey(id)){
+                typeLabel.put(id, new HashSet<>());
+            }
+            typeLabel.get(id).add(label);
+        }
+        Map<Set<String>, String> result = new HashMap<>();
+        typeLabel.keySet().forEach(key -> result.put(typeLabel.get(key), key));
+        return result;
+    }
 }

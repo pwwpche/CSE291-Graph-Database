@@ -44,7 +44,6 @@ public class QueryPlanner {
         for (Path path : pathList) {
             nodes.addAll(path.nodes);
             for(int i = 0, size = path.relations.size() ; i < size ; i++){
-                //TODO: How about edges in different matches?
                 String start = path.nodes.get(i);
                 String end = path.nodes.get(i + 1);
                 String direction = path.direction.get(i);
@@ -231,7 +230,7 @@ public class QueryPlanner {
         // Apply additional filter operations on the table.
         List<Equality> relationEquality = new ArrayList<>();
         for(Equality equality : equalityList){
-            // Filter of relation.
+            // This is a relation equality, not a node equality.
             if(!nodes.contains(equality.var1)){
                 if(table.relations.contains(equality.var1) && table.relations.contains(equality.var2)){
                     relationEquality.add(equality);
@@ -333,7 +332,7 @@ public class QueryPlanner {
                 newTable = addAdditionalFilter(newTable);
                 candidates.add(newTable);
             }else if(table.nodes.contains(edge.start) || table.nodes.contains(edge.end)){
-                String addedNode = "";
+                String addedNode ;
                 if(!hasRangeExpand){
                     ExpandAllPlan plan = new ExpandAllPlan(indexer, edge,
                             constraints, table);
