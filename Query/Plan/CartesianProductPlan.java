@@ -8,22 +8,22 @@ import Query.Entities.PlanTree;
  * Created by liuche on 5/29/17.
  */
 public class CartesianProductPlan extends Plan {
-    PlanTable from, to;
-    public CartesianProductPlan(QueryIndexer queryIndexer, PlanTable from, PlanTable to) {
+    PlanTable table1, table2;
+    public CartesianProductPlan(QueryIndexer queryIndexer, PlanTable table1, PlanTable table2) {
         super(queryIndexer);
-        this.from = from;
-        this.to = to;
-        this.estimatedSize = from.estimatedSize * to.estimatedSize;
+        this.table1 = table1;
+        this.table2 = table2;
+        this.estimatedSize = table1.estimatedSize * table2.estimatedSize;
 
     }
 
     @Override
     public void applyTo(PlanTable table) {
-        assert table.equals(this.to);
-        table.nodes.addAll(from.nodes);
-        table.relations.addAll(from.relations);
+        assert table.equals(this.table2);
+        table.nodes.addAll(table1.nodes);
+        table.relations.addAll(table1.relations);
         table.estimatedSize = this.estimatedSize;
-        table.plans = PlanTree.Combine(from.plans, to.plans, this);
+        table.plans = PlanTree.Combine(table1.plans, table2.plans, this);
         table.plans.add(this);
         table.cost += this.estimatedSize;
         super.applyTo(table);
@@ -36,9 +36,9 @@ public class CartesianProductPlan extends Plan {
 
     @Override
     public String getVariable() {
-        String result = String.join(", ", from.nodes);
+        String result = String.join(", ", table1.nodes);
         result += " -- ";
-        result += String.join(", ", to.nodes);
+        result += String.join(", ", table2.nodes);
         return result;
     }
 

@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.nio.Buffer;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -65,11 +66,11 @@ public class QueryIndexer {
     }
 
 
-    public QueryIndexer(Connection conn) throws IOException {
+    public QueryIndexer(Connection conn) throws IOException, SQLException {
         this.conn = conn;
         this.dbUtil = new DBUtil(conn);
 
-        File indexerFile = new File("indexer_bkp.dat");
+        File indexerFile = new File("indexer.dat");
         if(indexerFile.exists()){
             load();
         }else{

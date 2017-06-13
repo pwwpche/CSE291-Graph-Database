@@ -17,16 +17,16 @@ public class RangeExpandAllPlan extends Plan {
     private RelationEdge edge;
     private String fromNode;
     private String toNode;
-    private QueryConstraints cons;
+    private QueryConstraints relationConstraints;
     private Pair<Integer, Integer> range;
-
+    private QueryConstraints nodeConstraints;
 
 
     public RangeExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
-        this.cons = constraints;
+        this.relationConstraints = constraints;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
 
@@ -125,7 +125,7 @@ public class RangeExpandAllPlan extends Plan {
                     }
                 }
             }else{
-                //Starting from second iteration, only expand by relations.
+                //Starting table1 second iteration, only expand by relations.
                 double edges = 0;
                 for(String relation : usedRelations){
                     edges += indexer.getRelationsWithLabel(relation);
@@ -135,6 +135,17 @@ public class RangeExpandAllPlan extends Plan {
             }
         }
 
+    }
+    public QueryConstraints getRelationConstraints(){
+        return relationConstraints;
+    }
+
+    public void setNodeConstraints(QueryConstraints cons){
+        this.nodeConstraints = cons;
+    }
+
+    public QueryConstraints getNodeConstraints(){
+        return this.nodeConstraints;
     }
 
     @Override
@@ -149,7 +160,7 @@ public class RangeExpandAllPlan extends Plan {
 
     @Override
     public String getParams() {
-        return "-[" + edge.name + (cons.getConstraints().size() == 0 ? "" : ":" + cons.toString()) + "]-(" + toNode + ")";
+        return "-[" + edge.name + (relationConstraints.getConstraints().size() == 0 ? "" : ":" + relationConstraints.toString()) + "]-(" + toNode + ")";
     }
 
     @Override

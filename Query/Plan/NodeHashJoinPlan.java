@@ -23,7 +23,7 @@ public class NodeHashJoinPlan extends Plan {
         this.eqlist = equalities;
 
         //TODO: This size estimation is wrong.
-        //this.estimatedSize = from.estimatedSize > to.estimatedSize ? from.estimatedSize : to.estimatedSize;
+        //this.estimatedSize = table1.estimatedSize > table2.estimatedSize ? table1.estimatedSize : table2.estimatedSize;
         this.estimatedSize = from.estimatedSize * to.estimatedSize;
     }
 

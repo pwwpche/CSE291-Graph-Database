@@ -27,12 +27,23 @@ public class ResultTable {
         }
     }
 
-    public void shrink(String key, Set<String> values){
+    public void shrinkBySet(String key, Set<String> values){
         int index = keyToIdx.get(key);
         List<List<String>> newTable = new ArrayList<>();
         for(List<String> row : table){
             if(values.contains(row.get(index))){
                newTable.add(row);
+            }
+        }
+        table = newTable;
+    }
+
+    public void shrinkByEquality(String key1, String key2){
+        int index1 = keyToIdx.get(key1), index2 = keyToIdx.get(key2);
+        List<List<String>> newTable = new ArrayList<>();
+        for(List<String> row : table){
+            if(row.get(index1).equals(row.get(index2))){
+                newTable.add(row);
             }
         }
         table = newTable;
@@ -59,11 +70,16 @@ public class ResultTable {
     public void expand(String fromKey, List<String> toKey, Map<String, List<List<String>>> values){
         // By default. expand by the first key.
         List<List<String> > newTable = new ArrayList<>();
-        keyToIdx.put(toKey.get(0), keyToIdx.size());
+        for(String key : toKey){
+            keyToIdx.put(key, keyToIdx.size());
+        }
+        Integer fromIndex = keyToIdx.get(fromKey);
+
         for(List<String> row : table){
-            String targetValue = row.get(keyToIdx.get(fromKey));
+            String targetValue = row.get(fromIndex);
             if(values.containsKey(targetValue)){
                 List<List<String>> newRows = new ArrayList<>();
+
                 for(List<String> val : values.get(targetValue)){
                     List<String> newRow = new ArrayList<>(row);
                     newRow.addAll(val);
@@ -75,7 +91,9 @@ public class ResultTable {
         table = newTable;
     }
 
-    public void expandMulti(String fromKey1, String fromKey2, String toKey, Map<String, Map<String, String>> values){
+
+
+    public void expandMultiKey(String fromKey1, String fromKey2, String toKey, Map<String, Map<String, String>> values){
         List<List<String>> newTable = new ArrayList<>();
         keyToIdx.put(toKey, keyToIdx.size());
         Integer fromIdx1 = keyToIdx.get(fromKey1), fromIdx2 = keyToIdx.get(fromKey2);
@@ -90,9 +108,28 @@ public class ResultTable {
         table = newTable;
     }
 
+    public void expandMultiKeyList(String fromKey1, String fromKey2, String toKey, Map<String, Map<String, List<String>>> values){
+        List<List<String>> newTable = new ArrayList<>();
+        keyToIdx.put(toKey, keyToIdx.size());
+        Integer fromIdx1 = keyToIdx.get(fromKey1), fromIdx2 = keyToIdx.get(fromKey2);
+        for(List<String> row : table){
+            String val1 = row.get(fromIdx1), val2 = row.get(fromIdx2);
+            if(values.containsKey(val1) && values.get(val1).containsKey(val2)){
+                List<String> val = values.get(val1).get(val2);
+                for(String v: val){
+                    List<String> newRow = new ArrayList<>(row);
+                    newRow.add(v);
+                    newTable.add(newRow);
+                }
+            }
+        }
+        table = newTable;
+    }
+
     public List<String> getAll(String key){
         List<String> result = new ArrayList<>();
-        table.forEach(line -> result.add(line.get(keyToIdx.get(key))));
+        Integer keyIndex = keyToIdx.get(key);
+        table.forEach(line -> result.add(line.get(keyIndex)));
         return result;
     }
 

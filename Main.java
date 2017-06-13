@@ -52,7 +52,7 @@ public class Main {
 //        }
 
         //Parsing this CSV file:
-        String url = "jdbc:mysql://localhost:3306/test";
+        String url = "jdbc:mysql://localhost:3306/graphDB";
         String fileName = "large.csv";
 
 
@@ -62,14 +62,17 @@ public class Main {
         Connection connection = DriverManager.getConnection(url, username, password);
         System.out.println("MySQL connected.");
 
-        System.out.println("Parsing file...");
-        FileParser fileParser = new FileParser(fileName, connection);
-        fileParser.run();
-        System.out.println("Parsing complete.");
+//        if(false){
+//            System.out.println("Parsing file...");
+//            FileParser fileParser = new FileParser(fileName, connection);
+//            fileParser.run();
+//            System.out.println("Parsing complete.");
+//        }
 
-//        System.out.println("Creating index...");
-//        QueryIndexer queryIndexer = new QueryIndexer(connection);
-//        System.out.println("Index created...");
+
+        System.out.println("Creating index...");
+        QueryIndexer queryIndexer = new QueryIndexer(connection);
+        System.out.println("Index created...");
 //
 //        System.out.println("Parsing ANTLR query...");
 //        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));

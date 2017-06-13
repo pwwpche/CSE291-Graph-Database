@@ -17,13 +17,14 @@ public class ExpandAllPlan extends Plan {
     private RelationEdge edge;
     private String fromNode;
     private String toNode;
-    private QueryConstraints cons;
+    private QueryConstraints relationConstraints;
+    private QueryConstraints nodeConstraints;
 
     public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
-        this.cons = constraints;
+        this.relationConstraints = constraints;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
         List<String> usedLabels = new ArrayList<>();
@@ -99,6 +100,18 @@ public class ExpandAllPlan extends Plan {
         }
     }
 
+    public QueryConstraints getRelationConstraint(){
+        return this.relationConstraints;
+    }
+
+    public void setNodeConstraints(QueryConstraints cons){
+        this.nodeConstraints = cons;
+    }
+
+    public QueryConstraints getNodeConstraints(){
+        return this.nodeConstraints;
+    }
+
     @Override
     public void applyTo(PlanTable table) {
         table.relations.add(edge.name);
@@ -111,7 +124,7 @@ public class ExpandAllPlan extends Plan {
 
     @Override
     public String getParams() {
-        return "-[" + edge.name + (cons.getConstraints().size() == 0 ? "" : ":" + cons.toString()) + "]-(" + toNode + ")";
+        return "-[" + edge.name + (relationConstraints.getConstraints().size() == 0 ? "" : ":" + relationConstraints.toString()) + "]-(" + toNode + ")";
     }
 
     @Override

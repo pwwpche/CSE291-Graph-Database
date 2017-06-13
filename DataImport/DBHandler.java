@@ -3,6 +3,7 @@ package DataImport;
 import Utility.DBUtil;
 
 import java.nio.charset.Charset;
+import java.sql.SQLException;
 import java.util.*;
 
 import static java.nio.charset.StandardCharsets.ISO_8859_1;
@@ -18,7 +19,7 @@ public class DBHandler {
         this.util = util;
     }
 
-    public void insertObject(String gid, Map<String, Object> values){
+    public void insertObject(String gid, Map<String, Object> values) throws SQLException {
         for(String property : values.keySet()){
             String value = values.get(property).toString();
             String sql = "INSERT INTO P_" + property + "(gid, value) VALUES (\"";
@@ -27,21 +28,22 @@ public class DBHandler {
             util.batchExecute(sql);
         }
     }
-    public void finish(){
+    public void finish() throws SQLException {
         util.dumpBatch();
     }
 
 
-    public void insertObjectType(String gid, String type){
+    public void insertObjectType(String gid, String type) throws SQLException {
         String sql = "INSERT INTO ObjectType(gid, type) VALUES (" +
                 "\"" + gid + "\"," +
                 "\"" + type + "\");\n";
         util.batchExecute(sql);
+
     }
 
 
 
-    public void insertLabel(String gid, List<String> labels){
+    public void insertLabel(String gid, List<String> labels) throws SQLException {
 
         for(String label : labels){
             String sql = "INSERT INTO nodeLabel(gid, label) VALUES(" +
@@ -53,7 +55,7 @@ public class DBHandler {
     }
 
 
-    public void insertEdge(Map<String, String> item){
+    public void insertEdge(Map<String, String> item) throws SQLException {
         List<String> keySets = new ArrayList<>(item.keySet());
         String sql = "INSERT INTO Edge(" + String.join(",", keySets) + ") VALUES(";
         for(String key : keySets){
@@ -63,10 +65,11 @@ public class DBHandler {
         sql = sql.substring(0, sql.length() - 1);
         sql += ");\n";
         util.batchExecute(sql);
+
     }
 
 
-    public boolean checkExist(Map<String, Object> item){
+    public boolean checkExist(Map<String, Object> item) throws SQLException {
         boolean result;
         for(String prop : item.keySet()){
             String value = item.get(prop).toString();
@@ -79,12 +82,13 @@ public class DBHandler {
         return true;
     }
 
-    public String getUniqueGidBy(String prop, String value){
+    public String getUniqueGidBy(String prop, String value) throws SQLException {
+
         String sql = "SELECT gid FROM P_" + prop + " WHERE VALUE = \"" + value + "\";\n";
         return util.getStringFromSQL(sql);
     }
 
-    public List<Integer> getGidBy(String property, String value){
+    public List<Integer> getGidBy(String property, String value) throws SQLException {
         String sql = "SELECT gid FROM P_" + property + " WHERE VALUE = \"" + value + "\";\n";
         List<String> resStringList = util.getListFromSQL(sql);
         List<Integer> result = new ArrayList<>();
@@ -94,7 +98,7 @@ public class DBHandler {
         return result;
     }
 
-    public boolean checkExist(String prop, String value){
+    public boolean checkExist(String prop, String value) throws SQLException {
         String statement = "SELECT COUNT(*) FROM P_" + prop + " WHERE value = \"" + value + "\";";
         return util.getIntegerFromSQL(statement) != 0;
     }
@@ -104,7 +108,7 @@ public class DBHandler {
         return 0;
     }
 
-    public Map<Set<String>,String> getNodeLabelType() {
+    public Map<Set<String>,String> getNodeLabelType()  throws SQLException {
         String statement = "SELECT * FROM typeLabel;";
         Map<String, List<String>> res = util.getTableFromSQL(statement);
         List<String> ids = res.get("id");

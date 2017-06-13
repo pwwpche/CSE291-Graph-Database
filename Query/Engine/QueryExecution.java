@@ -37,9 +37,9 @@ public class QueryExecution {
             }else if(plan instanceof ScanByIdPlan){
                 executionList.add(new ScanByIdExec(dbUtil, plan));
             }else if(plan instanceof ExpandIntoPlan){
-
+                executionList.add(new ExpandIntoExec(dbUtil, plan));
             }else if(plan instanceof ExpandAllPlan){
-
+                executionList.add(new ExpandAllExec(dbUtil, plan));
             }else if(plan instanceof RangeExpandAllPlan){
 
             }else if(plan instanceof RangeExpandIntoPlan){

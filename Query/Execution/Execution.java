@@ -3,6 +3,7 @@ package Query.Execution;
 import Query.Plan.Plan;
 import Utility.DBUtil;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,11 +31,11 @@ public class Execution {
         return operandCount();
     }
 
-    public ResultTable execute(){
+    public ResultTable execute() {
         return new ResultTable();
     }
 
-    public ResultTable execute(ResultTable table1){
+    public ResultTable execute(ResultTable table1)  {
         return table1;
     }
 

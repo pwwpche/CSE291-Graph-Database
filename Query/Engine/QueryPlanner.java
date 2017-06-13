@@ -336,26 +336,29 @@ public class QueryPlanner {
                 if(!hasRangeExpand){
                     ExpandAllPlan plan = new ExpandAllPlan(indexer, edge,
                             constraints, table);
-                    plan.applyTo(newTable);
+
                     addedNode = plan.getExpandedNode();
+                    if(varToConstraint.get(addedNode).getConstraints().size() > 0){
+                        plan.setNodeConstraints(varToConstraint.get(addedNode));
+                    }
+                    plan.applyTo(newTable);
                 }else{
                     RangeExpandAllPlan plan = new RangeExpandAllPlan(indexer, edge,
                             constraints,
                             table);
-                    plan.applyTo(newTable);
+
                     addedNode = plan.getExpandedNode();
+                    if(varToConstraint.get(addedNode).getConstraints().size() > 0){
+                        plan.setNodeConstraints(varToConstraint.get(addedNode));
+                    }
+                    plan.applyTo(newTable);
                 }
 
                 newTable = addAdditionalFilter(newTable);
 
                 // If a node is added, should we add filters before or after it?
 
-                if(varToConstraint.get(addedNode).getConstraints().size() > 0){
-                    for(Constraint constraint : varToConstraint.get(addedNode).getConstraints()){
-                        FilterConstraintPlan plan1 = new FilterConstraintPlan(indexer, addedNode, constraint, newTable);
-                        plan1.applyTo(newTable);
-                    }
-                }
+
                 candidates.add(newTable);
             }
 

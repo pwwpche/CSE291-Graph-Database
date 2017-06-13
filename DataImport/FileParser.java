@@ -10,6 +10,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -268,16 +269,17 @@ public class FileParser {
         return result;
     }
 
-    public void run() throws IOException {
+    public void run() throws IOException, SQLException {
         System.out.println("Creating tables...");
         getMetadata();
         MyBufferedReader br = new MyBufferedReader(fileName);
+
         // Construct the set including all properties occurred,
         // and map from label to type id and property set.
         // Distinguish node property from edge property.
 
         String line;
-        if(true) {
+        if(false) {
             // All relations are of type 0.
             // Typeid of nodes starts from 1.
             int typeId = 1;
@@ -400,10 +402,6 @@ public class FileParser {
 
         // Scan for each node and insert it into database.
         Map<String, String> usedNodeIds = new HashMap<>();
-        Integer[] gidTable = new Integer[7000000];
-        for(int i = 0 ; i < 7000000 ; i++){
-            gidTable[i] = -1;
-        }
         InMemoryBloomFilter<String> filter = new InMemoryBloomFilter<>(7000000, 0.01);
 
         int count = 0;
@@ -435,10 +433,12 @@ public class FileParser {
                     String id = item.get("id").toString();
 
                     if(item.containsKey("text")){
-                        // For tweets, use BloomFilter to find if it exists.
+                        // For tweets, use BloomFilter to find if it check.
                         if(filter.contains(id)) {
+                            dbUtil.dumpBatch();
                             String gid = handler.getUniqueGidBy("id", id);
                             if (!("".equals(gid))) {
+                                lineGidType.put(type, gid);
                                 continue;
                             }
                         }
