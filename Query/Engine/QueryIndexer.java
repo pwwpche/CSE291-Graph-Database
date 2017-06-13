@@ -51,6 +51,8 @@ public class QueryIndexer {
             Map<String, Object> mem = JsonParser.jsonToMap(object);
             numberOfNodes = (Integer) mem.get("numberOfNodes");
             numberOfRelations = (Integer) mem.get("numberOfRelations");
+            maxNodeOutgoing = (Integer) mem.get("maxNodeOutgoing");
+            maxNodeIncoming = (Integer) mem.get("maxNodeIncoming");
             labelRelation = (Map<String, Integer>) mem.get("labelRelation");
             labelNodes = (Map<String, Integer>) mem.get("labelNodes");
             propertyCountOfNodes = (Map<String, Integer>) mem.get("propertyCountOfNodes");
@@ -67,6 +69,8 @@ public class QueryIndexer {
         JSONObject object = new JSONObject();
         object.put("numberOfNodes", numberOfNodes);
         object.put("numberOfRelations", numberOfRelations);
+        object.put("maxNodeIncoming", maxNodeIncoming);
+        object.put("maxNodeOutgoing", maxNodeOutgoing);
         object.put("labelRelation", labelRelation);
         object.put("labelNodes", labelNodes);
         object.put("propertyCountOfNodes", propertyCountOfNodes);
@@ -216,7 +220,8 @@ public class QueryIndexer {
         return this.numberOfRelations;
     }
 
-    public int getMaxEdgesOfNode(){
-        return this.maxNodeIncoming > this.maxNodeOutgoing ? this.maxNodeIncoming : this.maxNodeOutgoing;
+    public int getAvgEdgesOfNode(){
+
+        return (int)(this.numberOfRelations * 1.0 / this.numberOfNodes);
     }
 }

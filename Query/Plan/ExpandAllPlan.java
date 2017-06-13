@@ -50,7 +50,7 @@ public class ExpandAllPlan extends Plan {
             //TODO: Relation with string property is not implemented.
         }
         if (usedLabels.size() == 0 && usedRelations.size() == 0) {
-            int minExpand = indexer.getMaxEdgesOfNode();
+            int minExpand = indexer.getAvgEdgesOfNode();
             this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
         } else {
             if (usedLabels.size() == 0) {
@@ -58,8 +58,8 @@ public class ExpandAllPlan extends Plan {
                 for (String relationLabel : usedRelations) {
                     size += indexer.getRelationsWithLabel(relationLabel);
                 }
-                double minExpand = indexer.getMaxEdgesOfNode() < size
-                        ? indexer.getMaxEdgesOfNode() : size;
+                double minExpand = indexer.getAvgEdgesOfNode() < size
+                        ? indexer.getAvgEdgesOfNode() : size;
                 this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
             } else {
 

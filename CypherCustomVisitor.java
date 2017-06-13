@@ -4,6 +4,7 @@ import Query.Engine.QueryIndexer;
 import Query.Engine.QueryPlanner;
 import Query.Entities.PlanTree;
 import Query.Execution.ResultTable;
+import Query.Plan.Plan;
 import Utility.DBUtil;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -51,13 +52,28 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
                                                 indexer
                 );
 
-
+        System.out.println("Planning Query\n");
+        System.out.println("========================");
         PlanTree bestPlan = planner.plan();
+        for(Plan plan : bestPlan.plans){
+            System.out.println(plan.getName() + "|" + plan.getVariable() + "|" + plan.getParams());
+        }
+        System.out.println("========================\n\n\n");
+        System.out.println("Query Plan generated. ");
 
+        System.out.println("Executing query...");
         QueryExecution execution = new QueryExecution(new DBUtil(conn), bestPlan);
         ResultTable table = execution.execute();
-        System.out.println(table.toString());
+        System.out.println("Finished. ");
 
+        System.out.println("Query content: ");
+        System.out.println("========================");
+        System.out.println(table.toString());
+        System.out.println("========================\n\n\n");
+        System.out.println("SQL: ");
+        System.out.println("========================");
+        System.out.println(String.join("\n", execution.getUsedSQL()));
+        System.out.println("========================\n\n\n");
     }
 
     @Override

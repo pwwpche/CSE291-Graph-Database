@@ -23,10 +23,7 @@ public class FilterRelationEqualityExec extends Execution {
         for(Equality equality : equalities){
             String relation1 = equality.var1;
             String relation2 = equality.var2;
-
-            //TODO: Implement other equality types
-            assert "==".equals(equality.equality);
-            table1.shrinkByEquality(relation1, relation2);
+            table1.shrinkByEquality(relation1, relation2, equality.equality);
         }
         this.querySQL = exeUtil.getHistory();
         return table1;

@@ -17,6 +17,13 @@ import java.util.Stack;
 public class QueryExecution {
     private DBUtil dbUtil;
     private PlanTree tree;
+
+    public List<String> getUsedSQL() {
+        return usedSQL;
+    }
+
+    private List<String> usedSQL = new ArrayList<>();
+
     public QueryExecution(DBUtil util, PlanTree tree){
         this.dbUtil = util;
         this.tree = tree;
@@ -57,15 +64,18 @@ public class QueryExecution {
         }
 
         Stack<ResultTable> resStack = new Stack<>();
+        List<String> querySQL = new ArrayList<>();
         for(Execution execution : executionList){
             switch (execution.operandCount()){
                 case 0:
                     resStack.push(execution.execute());
+                    querySQL.addAll(execution.getQuerySQL());
                     break;
                 case 1:
                     ResultTable table = resStack.peek();
                     resStack.pop();
                     resStack.push(execution.execute(table));
+                    querySQL.addAll(execution.getQuerySQL());
                     break;
                 case 2:
                     ResultTable table1 = resStack.peek();
@@ -73,12 +83,14 @@ public class QueryExecution {
                     ResultTable table2 = resStack.peek();
                     resStack.pop();
                     resStack.push(execution.execute(table1, table2));
+                    querySQL.addAll(execution.getQuerySQL());
                     break;
                 default:
                     break;
             }
         }
         assert resStack.size() == 1;
+        this.usedSQL = querySQL;
         return resStack.get(0);
 
     }

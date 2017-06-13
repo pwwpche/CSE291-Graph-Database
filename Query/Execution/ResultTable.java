@@ -63,12 +63,23 @@ public class ResultTable {
         table = newTable;
     }
 
-    public void shrinkByEquality(String key1, String key2){
+    public void shrinkByEquality(String key1, String key2, String equality){
         int index1 = keyToIdx.get(key1), index2 = keyToIdx.get(key2);
         List<List<String>> newTable = new ArrayList<>();
         for(List<String> row : table){
-            if(row.get(index1).equals(row.get(index2))){
-                newTable.add(row);
+            switch (equality){
+                case "==" :
+                    if(row.get(index1).equals(row.get(index2))){
+                        newTable.add(row);
+                    }
+                    break;
+                case "!=":
+                    if(!row.get(index1).equals(row.get(index2))){
+                        newTable.add(row);
+                    }
+                    break;
+                default:
+                    break;
             }
         }
         table = newTable;

@@ -19,7 +19,7 @@ public class CartesianProductPlan extends Plan {
 
     @Override
     public void applyTo(PlanTable table) {
-        assert table.equals(this.table2);
+        assert table.nodes.equals(table2.nodes);
         table.nodes.addAll(table1.nodes);
         table.relations.addAll(table1.relations);
         table.estimatedSize = this.estimatedSize;

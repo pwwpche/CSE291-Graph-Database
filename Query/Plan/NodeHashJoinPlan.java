@@ -24,7 +24,7 @@ public class NodeHashJoinPlan extends Plan {
 
         //TODO: This size estimation is wrong.
         //this.estimatedSize = table1.estimatedSize > table2.estimatedSize ? table1.estimatedSize : table2.estimatedSize;
-        this.estimatedSize = from.estimatedSize * to.estimatedSize;
+        this.estimatedSize = from.estimatedSize > to.estimatedSize ? from.estimatedSize : to.estimatedSize;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class NodeHashJoinPlan extends Plan {
         table.nodes.addAll(from.nodes);
         table.relations.addAll(from.relations);
         table.estimatedSize = this.estimatedSize;
-        table.cost += from.estimatedSize > to.estimatedSize ? from.estimatedSize : to.estimatedSize;
+        table.cost += this.estimatedSize;
         table.plans = PlanTree.Combine(from.plans, to.plans, this);
         super.applyTo(table);
     }

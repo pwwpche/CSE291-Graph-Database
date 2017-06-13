@@ -279,7 +279,7 @@ public class FileParser {
         // Distinguish node property from edge property.
 
         String line;
-        if(false) {
+        if(true) {
             // All relations are of type 0.
             // Typeid of nodes starts from 1.
             int typeId = 1;

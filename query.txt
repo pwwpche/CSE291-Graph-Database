@@ -1,2 +1,2 @@
-match (a)-[r]->(b) where b.id = "4818134"
-return a.id, r.id, b.id
+match (a)-[r]->(b), (c)-[r2]->(b) where b.id = "4818134"
+return a.id, r, b.id, c.id

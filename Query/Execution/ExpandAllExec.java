@@ -59,7 +59,7 @@ public class ExpandAllExec extends Execution {
 
         Set<String> startNodes = new HashSet<>(table.getAll(insideNode));
         Map<String, List<List<String>>> candidates = new HashMap<>();
-        List<String> retItems = new ArrayList<>(Arrays.asList("to", "name"));
+        List<String> retItems;
 
         for(String node : startNodes){
             Map<String, String> condition = new HashMap<>();
@@ -68,8 +68,10 @@ public class ExpandAllExec extends Execution {
                 case "-->" :
                     if(insideNode.equals(edge.start)){
                         condition.put("from", node);
+                        retItems = new ArrayList<>(Arrays.asList("to", "name"));
                     }else{
                         condition.put("to", node);
+                        retItems = new ArrayList<>(Arrays.asList("from", "name"));
                     }
                     res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
                     candidates.put(node, res);
@@ -77,7 +79,11 @@ public class ExpandAllExec extends Execution {
                 case "<--":
                     if(insideNode.equals(edge.start)){
                         condition.put("to", node);
+                        retItems = new ArrayList<>();
+                        retItems.add("from");
                     }else{
+                        retItems = new ArrayList<>();
+                        retItems.add("to");
                         condition.put("from", node);
                     }
                     res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
@@ -85,10 +91,12 @@ public class ExpandAllExec extends Execution {
                     break;
                 case "--" :case "<-->":
                     condition.put("to", node);
+                    retItems = new ArrayList<>(Arrays.asList("from", "name"));
                     res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
                     condition.remove("to");
 
                     condition.put("from", node);
+                    retItems = new ArrayList<>(Arrays.asList("to", "name"));
                     res.addAll(exeUtil.getEdgesBy(retItems, condition, relationTypes));
                     candidates.put(node, res);
                     break;

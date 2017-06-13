@@ -61,12 +61,11 @@ public class Main {
         Connection connection = DriverManager.getConnection(url, username, password);
         System.out.println("MySQL connected.");
 
-//        if(false){
-//            System.out.println("Parsing file...");
-//            FileParser fileParser = new FileParser(fileName, connection);
-//            fileParser.run();
-//            System.out.println("Parsing complete.");
-//        }
+
+//        System.out.println("Parsing file...");
+//        FileParser fileParser = new FileParser(fileName, connection);
+//        fileParser.run();
+//        System.out.println("Parsing complete.");
 
 
         System.out.println("Creating index...");

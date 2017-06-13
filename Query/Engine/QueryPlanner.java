@@ -186,12 +186,7 @@ public class QueryPlanner {
         ProduceResultPlan produceResultPlan = new ProduceResultPlan(indexer, bestPlan, retList);
         produceResultPlan.applyTo(bestPlan);
 
-        for(Plan plan : bestPlan.plans.toList()){
-            System.out.println(plan.getName() + "|" + plan.getVariable() + "|" + plan.getParams());
-        }
-
         return bestPlan.plans;
-
     }
 
     private void removeRelated(Plan plan){

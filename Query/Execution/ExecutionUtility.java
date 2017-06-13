@@ -21,7 +21,9 @@ public class ExecutionUtility {
     }
 
     public List<String> getHistory() {
-        return this.dbUtil.stopAndReturn();
+        List<String> newHistory = new ArrayList<>();
+        newHistory.addAll( this.dbUtil.stopAndReturn());
+        return newHistory;
     }
 
     public List<String> getAllNodes() {
