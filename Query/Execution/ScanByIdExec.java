@@ -1,6 +1,7 @@
 package Query.Execution;
 
 import Query.Plan.Plan;
+import Query.Plan.ScanByIdPlan;
 import Utility.DBUtil;
 
 import java.util.ArrayList;
@@ -21,12 +22,9 @@ public class ScanByIdExec extends Execution {
     public ResultTable execute() {
         exeUtil.startRecording();
         ResultTable table = new ResultTable();
-        List<String> gids = new ArrayList<>();
-        gids.add(plan.getVariable());
-        table.putAll(plan.getVariable(), gids);
-
-
-        querySQL = exeUtil.getHistory();;
-        return super.execute();
+        List<String> gids = exeUtil.getNodeGidBy("id", ((ScanByIdPlan) plan).getId());
+        table.putAll(plan.getVariable(), ResultTable.ObjectType.NODE, gids);
+        querySQL = exeUtil.getHistory();
+        return table;
     }
 }

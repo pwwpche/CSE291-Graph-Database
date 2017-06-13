@@ -24,7 +24,6 @@ public class CartesianProductPlan extends Plan {
         table.relations.addAll(table1.relations);
         table.estimatedSize = this.estimatedSize;
         table.plans = PlanTree.Combine(table1.plans, table2.plans, this);
-        table.plans.add(this);
         table.cost += this.estimatedSize;
         super.applyTo(table);
     }

@@ -7,6 +7,7 @@ import Query.Plan.ExpandAllPlan;
 import Query.Plan.ExpandIntoPlan;
 import Query.Plan.Plan;
 import Utility.DBUtil;
+import com.sun.org.apache.regexp.internal.RE;
 
 import java.util.*;
 
@@ -27,9 +28,11 @@ public class ExpandAllExec extends Execution {
         // Filter out valid relations
         QueryConstraints relationConstraints = ((ExpandAllPlan)plan).getRelationConstraint();
         QueryConstraints nodeConstraints = ((ExpandAllPlan)plan).getNodeConstraints();
-        RelationEdge edge = ((ExpandIntoPlan)plan).getRelationEdge();
+        RelationEdge edge = ((ExpandAllPlan)plan).getRelationEdge();
+        String expandedNode = ((ExpandAllPlan)plan).getExpandedNode();
+        String insideNode = edge.start.equals(expandedNode) ? edge.end : edge.start;
 
-        List<String> relations = new ArrayList<>();
+        List<String> relationTypes = new ArrayList<>();
         List<String> nodeLabels = new ArrayList<>();
         Map<String, String> nodeProperties = new HashMap<>();
 
@@ -48,37 +51,45 @@ public class ExpandAllExec extends Execution {
             if(constraint.name.equals("rel_type")){
                 assert constraint.value.type.contains("List");
                 List<String> types = (List<String>) constraint.value.val;
-                relations.addAll(types);
+                relationTypes.addAll(types);
             }
         }
 
 
 
-        Set<String> startNodes = new HashSet<>(table.getAll(edge.start));
+        Set<String> startNodes = new HashSet<>(table.getAll(insideNode));
         Map<String, List<List<String>>> candidates = new HashMap<>();
-        List<String> retItems = new ArrayList<>(Arrays.asList(edge.end, edge.name));
+        List<String> retItems = new ArrayList<>(Arrays.asList("to", "name"));
 
         for(String node : startNodes){
-            Map<String, String> constraint = new HashMap<>();
+            Map<String, String> condition = new HashMap<>();
             List<List<String>> res = new ArrayList<>();
             switch(edge.direction){
                 case "-->" :
-                    constraint.put("from", node);
-                    res = exeUtil.getEdgesBy(retItems, constraint, relations);
+                    if(insideNode.equals(edge.start)){
+                        condition.put("from", node);
+                    }else{
+                        condition.put("to", node);
+                    }
+                    res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
                     candidates.put(node, res);
                     break;
                 case "<--":
-                    constraint.put("to", node);
-                    res = exeUtil.getEdgesBy(retItems, constraint, relations);
+                    if(insideNode.equals(edge.start)){
+                        condition.put("to", node);
+                    }else{
+                        condition.put("from", node);
+                    }
+                    res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
                     candidates.put(node, res);
                     break;
                 case "--" :case "<-->":
-                    constraint.put("to", node);
-                    res = exeUtil.getEdgesBy(retItems, constraint, relations);
-                    constraint.remove("to");
+                    condition.put("to", node);
+                    res = exeUtil.getEdgesBy(retItems, condition, relationTypes);
+                    condition.remove("to");
 
-                    constraint.put("from", node);
-                    res.addAll(exeUtil.getEdgesBy(retItems, constraint, relations));
+                    condition.put("from", node);
+                    res.addAll(exeUtil.getEdgesBy(retItems, condition, relationTypes));
                     candidates.put(node, res);
                     break;
                 default:
@@ -99,8 +110,9 @@ public class ExpandAllExec extends Execution {
                 }
             }
         }
-
-        table.expand(edge.start, retItems, outingEdges);
+        retItems = new ArrayList<>(Arrays.asList(expandedNode, edge.name));
+        List<ResultTable.ObjectType> retTypes = new ArrayList<>(Arrays.asList(ResultTable.ObjectType.NODE, ResultTable.ObjectType.RELATIONSHIP));
+        table.expand(insideNode, retItems, retTypes, outingEdges);
 
         this.querySQL = exeUtil.getHistory();
         return table;

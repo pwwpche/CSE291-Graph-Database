@@ -15,10 +15,7 @@ public class CartesianProductExec extends Execution {
     @Override
     public ResultTable execute(ResultTable table1, ResultTable table2) {
         exeUtil.startRecording();
-
-
-
-
+        table1.cartesianJoin(table2);
         this.querySQL = exeUtil.getHistory();
         return table1;
     }

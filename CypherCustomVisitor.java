@@ -1,11 +1,16 @@
 import Entity.*;
+import Query.Engine.QueryExecution;
 import Query.Engine.QueryIndexer;
 import Query.Engine.QueryPlanner;
+import Query.Entities.PlanTree;
+import Query.Execution.ResultTable;
+import Utility.DBUtil;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.sql.Connection;
 import java.util.*;
 
 /**
@@ -13,9 +18,11 @@ import java.util.*;
  *
  */
 public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
+    //TODO: Generalize all type strings to
     //This is the map used for first selection step.
     private Map<String, Value> mem = new HashMap<>();
     private QueryIndexer indexer;
+    private Connection conn;
     private Map<String, QueryConstraints> varToConstraint = new HashMap<>();
     private List<Equality> equalityList = new ArrayList<>();
     private List<Path> pathList = new ArrayList<>();
@@ -26,6 +33,9 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         this.indexer = queryIndexer;
     }
 
+    public void setConnection(Connection conn){
+        this.conn = conn;
+    }
     void reset(){
         varToConstraint = new HashMap<>();
         anonNode = 0; anonRelation = 0;
@@ -41,7 +51,12 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
                                                 indexer
                 );
 
-        planner.plan();
+
+        PlanTree bestPlan = planner.plan();
+
+        QueryExecution execution = new QueryExecution(new DBUtil(conn), bestPlan);
+        ResultTable table = execution.execute();
+        System.out.println(table.toString());
 
     }
 
@@ -719,7 +734,9 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
     @Override
     public Value visitLiteral(CypherParser.LiteralContext ctx) {
         if (ctx.StringLiteral() != null) {
-            return new Value(ctx.StringLiteral().getText(), true, "String");
+            String lit = ctx.getText();
+            lit = lit.substring(1, lit.length() - 1);
+            return new Value(lit, true, "String");
         } else if (ctx.NULL() != null) {
             return new Value("null", true, "null");
         } else {

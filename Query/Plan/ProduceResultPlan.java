@@ -32,6 +32,10 @@ public class ProduceResultPlan extends Plan {
         });
     }
 
+    public List<Pair<String, String>> getRetList(){
+        return retList;
+    }
+
     @Override
     public void applyTo(PlanTable table) {
         super.applyTo(table);

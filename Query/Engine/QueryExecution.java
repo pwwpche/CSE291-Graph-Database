@@ -17,13 +17,11 @@ import java.util.Stack;
 public class QueryExecution {
     private DBUtil dbUtil;
     private PlanTree tree;
-    QueryExecution(DBUtil util){
+    public QueryExecution(DBUtil util, PlanTree tree){
         this.dbUtil = util;
+        this.tree = tree;
     }
 
-    public void setTree(PlanTree tree){
-         this.tree = tree;
-    }
 
     public ResultTable execute(){
         List<Execution> executionList = new ArrayList<>();
@@ -45,14 +43,17 @@ public class QueryExecution {
             }else if(plan instanceof RangeExpandIntoPlan){
 
             }else if(plan instanceof NodeHashJoinPlan){
-
+                executionList.add(new NodeHashJoinExec(dbUtil, plan));
             }else if(plan instanceof CartesianProductPlan){
-
+                executionList.add(new CartesianProductExec(dbUtil, plan));
             }else if(plan instanceof FilterConstraintPlan){
-
+                executionList.add(new FilterConstraintExec(dbUtil, plan));
             }else if(plan instanceof FilterRelationEqualityPlan){
-
+                executionList.add(new FilterRelationEqualityExec(dbUtil, plan));
+            }else if(plan instanceof ProduceResultPlan) {
+                executionList.add(new ProduceResultExec(dbUtil, plan));
             }
+
         }
 
         Stack<ResultTable> resStack = new Stack<>();
@@ -78,11 +79,8 @@ public class QueryExecution {
             }
         }
         assert resStack.size() == 1;
-        return resStack.peek();
+        return resStack.get(0);
 
     }
-
-
-
 
 }

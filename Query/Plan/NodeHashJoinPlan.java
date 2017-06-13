@@ -32,7 +32,7 @@ public class NodeHashJoinPlan extends Plan {
         table.nodes.addAll(from.nodes);
         table.relations.addAll(from.relations);
         table.estimatedSize = this.estimatedSize;
-        table.cost += table.estimatedSize;
+        table.cost += from.estimatedSize > to.estimatedSize ? from.estimatedSize : to.estimatedSize;
         table.plans = PlanTree.Combine(from.plans, to.plans, this);
         super.applyTo(table);
     }

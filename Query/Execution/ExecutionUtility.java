@@ -57,7 +57,7 @@ public class ExecutionUtility {
 
 
     public List<String> getNodeGidBy(String field, String value) {
-        String statement = "SELECT gid FROM P_" + field + "WHERE " + field + " = \"" + value + "\";";
+        String statement = "SELECT gid FROM P_" + field + " WHERE value = \"" + value + "\";";
         try {
             return dbUtil.getListFromSQL(statement);
         } catch (SQLException e) {
@@ -90,17 +90,17 @@ public class ExecutionUtility {
     *           ["to3", "edge3"]...
     *       ]
     * */
-    public List<List<String>> getEdgesBy(List<String> retItems, Map<String, String> constraint, List<String> labels) {
+    public List<List<String>> getEdgesBy(List<String> retItems, Map<String, String> condition, List<String> labels) {
         assert retItems.size() > 0;
         String statement = "SELECT ";
 
         List<String> statItems = new ArrayList<>();
         retItems.forEach(prop -> statItems.add(convEdgeField(prop)));
-        statement += String.join(", ", retItems);
+        statement += String.join(", ", statItems);
         statement += " FROM Edge WHERE ";
 
-        for (String prop : constraint.keySet()) {
-            statement += convEdgeField(prop) + " = \"" + constraint.get(prop) + "\" AND ";
+        for (String prop : condition.keySet()) {
+            statement += convEdgeField(prop) + " = \"" + condition.get(prop) + "\" AND ";
         }
 
         if (labels.size() > 0) {
@@ -109,6 +109,8 @@ public class ExecutionUtility {
                 statement += "\"" + labels.get(i) + "\" OR rel_type = ";
             }
             statement += "\"" + labels.get(labels.size() - 1) + "\")";
+        }else{
+            statement = statement.substring(0, statement.lastIndexOf("AND"));
         }
         statement += ";";
         Map<String, List<String>> table = null;
@@ -220,8 +222,9 @@ public class ExecutionUtility {
         }
     }
 
+
     public String getPropertyByGid(String field, String gid) {
-        String statement = "SELECT gid FROM P_" + field + "WHERE gid = \"" + gid + "\";";
+        String statement = "SELECT value FROM P_" + field + " WHERE gid = \"" + gid + "\";";
         try {
             return dbUtil.getStringFromSQL(statement);
         } catch (SQLException e) {
@@ -230,15 +233,15 @@ public class ExecutionUtility {
         }
     }
 
-    public Map<String, String> expandObject(Integer gid) {
+    public Map<String, String> expandObject(String gid) {
         try {
-            String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid.toString() + "\";";
+            String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid + "\";";
             Integer nodeType = dbUtil.getIntegerFromSQL(statement);
             statement = "SELECT name FROM typeProperty WHERE id = \"" + nodeType.toString() + "\";";
             List<String> properties = dbUtil.getListFromSQL(statement);
             Map<String, String> result = new HashMap<>();
             for (String property : properties) {
-                statement = "SELECT value FROM P_" + property + " WHERE gid = \"" + gid.toString() + "\";";
+                statement = "SELECT value FROM P_" + property + " WHERE gid = \"" + gid + "\";";
                 String val = dbUtil.getStringFromSQL(statement);
                 result.put(property, val);
             }

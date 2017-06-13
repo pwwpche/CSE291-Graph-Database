@@ -30,8 +30,18 @@ public class QueryIndexer {
     private Map<String, Map<String, Integer>> nodeRelationInEdgeCount = new HashMap<>();
     private Map<String, Map<String, Integer>> nodeRelationOutEdgeCount = new HashMap<>();
 
-    private Integer numberOfNodes = 0, numberOfRelations = 0;
+    private Integer maxNodeIncoming = 0, maxNodeOutgoing = 0;
     private DBUtil dbUtil;
+    private Integer numberOfNodes = 0, numberOfRelations = 0;
+
+    public Integer getMaxNodeIncoming() {
+        return maxNodeIncoming;
+    }
+
+    public Integer getMaxNodeOutgoing() {
+        return maxNodeOutgoing;
+    }
+
 
     private void load() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader("indexer.dat"));
@@ -39,6 +49,8 @@ public class QueryIndexer {
         if(line.length() > 0){
             JSONObject object = new JSONObject(line);
             Map<String, Object> mem = JsonParser.jsonToMap(object);
+            numberOfNodes = (Integer) mem.get("numberOfNodes");
+            numberOfRelations = (Integer) mem.get("numberOfRelations");
             labelRelation = (Map<String, Integer>) mem.get("labelRelation");
             labelNodes = (Map<String, Integer>) mem.get("labelNodes");
             propertyCountOfNodes = (Map<String, Integer>) mem.get("propertyCountOfNodes");
@@ -53,6 +65,8 @@ public class QueryIndexer {
 
     private void dump() throws IOException {
         JSONObject object = new JSONObject();
+        object.put("numberOfNodes", numberOfNodes);
+        object.put("numberOfRelations", numberOfRelations);
         object.put("labelRelation", labelRelation);
         object.put("labelNodes", labelNodes);
         object.put("propertyCountOfNodes", propertyCountOfNodes);
@@ -80,6 +94,12 @@ public class QueryIndexer {
 
             statement = "SELECT COUNT(*) FROM Edge;";
             this.numberOfRelations = dbUtil.getIntegerFromSQL(statement);
+
+            statement = "SELECT COUNT(*) as C FROM Edge GROUP BY node1 ORDER BY C DESC LIMIT 1;";
+            this.maxNodeIncoming = dbUtil.getIntegerFromSQL(statement);
+
+            statement = "SELECT COUNT(*) as C FROM Edge GROUP BY node2 ORDER BY C DESC LIMIT 1;";
+            this.maxNodeOutgoing = dbUtil.getIntegerFromSQL(statement);
 
             // Get number of nodes with same label
             statement = "select label, COUNT(*) from NodeLabel GROUP BY (label);";
@@ -194,5 +214,9 @@ public class QueryIndexer {
 
     public int getNumberOfRelations(){
         return this.numberOfRelations;
+    }
+
+    public int getMaxEdgesOfNode(){
+        return this.maxNodeIncoming > this.maxNodeOutgoing ? this.maxNodeIncoming : this.maxNodeOutgoing;
     }
 }

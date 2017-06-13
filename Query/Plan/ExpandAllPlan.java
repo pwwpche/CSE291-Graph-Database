@@ -20,13 +20,17 @@ public class ExpandAllPlan extends Plan {
     private QueryConstraints relationConstraints;
     private QueryConstraints nodeConstraints;
 
-    public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
+
+    public ExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints nodeCons, QueryConstraints edgeCons, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
-        this.relationConstraints = constraints;
+        this.relationConstraints = edgeCons;
+        this.nodeConstraints = nodeCons;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
+//        this.edge.start = fromNode;
+//        this.edge.end = toNode;
         List<String> usedLabels = new ArrayList<>();
         List<String> usedRelations = new ArrayList<>();
         for (Plan plan : table.plans.toList()) {
@@ -37,7 +41,7 @@ public class ExpandAllPlan extends Plan {
             }
         }
 
-        for (Constraint constraint : constraints.getConstraints()) {
+        for (Constraint constraint : edgeCons.getConstraints()) {
             if (constraint.name.equals("rel_type")) {
                 assert constraint.value.type.contains("List");
                 List<String> types = (List<String>) constraint.value.val;
@@ -46,9 +50,7 @@ public class ExpandAllPlan extends Plan {
             //TODO: Relation with string property is not implemented.
         }
         if (usedLabels.size() == 0 && usedRelations.size() == 0) {
-            int minExpand = indexer.getNumberOfNode() < indexer.getNumberOfRelations()
-                    ? indexer.getNumberOfNode()
-                    : indexer.getNumberOfRelations();
+            int minExpand = indexer.getMaxEdgesOfNode();
             this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
         } else {
             if (usedLabels.size() == 0) {
@@ -56,8 +58,8 @@ public class ExpandAllPlan extends Plan {
                 for (String relationLabel : usedRelations) {
                     size += indexer.getRelationsWithLabel(relationLabel);
                 }
-                double minExpand = indexer.getNumberOfNode() < size
-                        ? indexer.getNumberOfNode() : size;
+                double minExpand = indexer.getMaxEdgesOfNode() < size
+                        ? indexer.getMaxEdgesOfNode() : size;
                 this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
             } else {
 

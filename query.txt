@@ -1,2 +1,2 @@
-match (a)-[r1:ACTS_IN]->(m)-->(c) match (e)-[r2:ACTS_IN*1..4]->(m)-->(f:Person)
-where a.name = f.name AND c.name = "Movie2" return a,b,e,f.name
+match (a)-[r]->(b) where b.id = "4818134"
+return a.id, r.id, b.id

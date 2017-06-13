@@ -8,12 +8,13 @@ import Query.Entities.PlanTable;
  * This plan is discarded.
  */
 public class ScanByIdPlan extends Plan {
-
-    public ScanByIdPlan(QueryIndexer queryIndexer, String node) {
+    private String id;
+    public ScanByIdPlan(QueryIndexer queryIndexer, String node, String id) {
         super(queryIndexer);
         this.variable = node;
         this.estimatedSize = 1;
         this.variable = node;
+        this.id = id;
     }
 
 
@@ -25,6 +26,9 @@ public class ScanByIdPlan extends Plan {
         table.plans.add(this);
     }
 
+    public String getId(){
+        return this.id;
+    }
 
     @Override
     public String getParams() {

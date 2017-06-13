@@ -144,7 +144,7 @@ public class ExpandIntoExec extends Execution {
         }
 
 
-        table.expandMultiKeyList(edge.start, edge.end, edge.name, valuesList);
+        table.expandMultiKeyList(edge.start, edge.end, edge.name, ResultTable.ObjectType.RELATIONSHIP, valuesList);
         querySQL = exeUtil.getHistory();
         return table;
     }

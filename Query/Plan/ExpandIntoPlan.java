@@ -58,7 +58,7 @@ public class ExpandIntoPlan extends Plan {
 
         // Size estimation for (a:A:B)-[r:R1|R2]->(b:D:E)
         Integer outgoingSize = 0, incomingSize = 0;
-        if(!edge.direction.equals("<--")){
+        if(!edge.direction.equals("<--")){      //Directions: -->, --, <-->
             int currentSize = 0;
             for(String relation : relations){
                 int minEdges = Integer.MAX_VALUE;
@@ -80,7 +80,7 @@ public class ExpandIntoPlan extends Plan {
             outgoingSize = (outgoingSize < currentSize) ? outgoingSize : currentSize;
         }
 
-        if(!edge.direction.equals("-->")){
+        if(!edge.direction.equals("-->")){      //Directions: <--, --, <-->
             int currentSize = 0;
             for(String relation : relations){
                 int minEdges = Integer.MAX_VALUE;
@@ -109,11 +109,8 @@ public class ExpandIntoPlan extends Plan {
             case "<--" :
                 cost = incomingSize;
                 break;
-            case "<-->" :
-                cost = (incomingSize < outgoingSize) ? incomingSize : outgoingSize;
-                break;
-            case "--" :
-                cost = (incomingSize > outgoingSize) ? incomingSize : outgoingSize;
+            case "<-->" : case "--" :
+                cost = incomingSize + outgoingSize;
                 break;
             default:
                 break;

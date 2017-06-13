@@ -1,5 +1,6 @@
 package Entity;
 
+import javax.management.Query;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,14 @@ import java.util.List;
  */
 public class QueryConstraints {
     private List<Constraint> cons = new ArrayList<>();
+
+    public QueryConstraints(){
+
+    }
+
+    public QueryConstraints(QueryConstraints other){
+        this.cons.addAll(other.getConstraints());
+    }
 
     public void add(Constraint constraint){
         cons.add(constraint);

@@ -22,13 +22,16 @@ public class RangeExpandAllPlan extends Plan {
     private QueryConstraints nodeConstraints;
 
 
-    public RangeExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
+    public RangeExpandAllPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints nodeCons, QueryConstraints edgeCons, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
         this.estimatedSize = table.estimatedSize;
-        this.relationConstraints = constraints;
+        this.relationConstraints = edgeCons;
+        this.nodeConstraints = nodeCons;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
+//        this.edge.start = fromNode;
+//        this.edge.end = toNode;
 
         //TODO: NOT FINISHED YET.
         List<String> usedLabels = new ArrayList<>();
@@ -43,7 +46,7 @@ public class RangeExpandAllPlan extends Plan {
 
 
 
-        for(Constraint constraint : constraints.getConstraints()){
+        for(Constraint constraint : edgeCons.getConstraints()){
             if(constraint.name.equals("rel_type")){
                 assert constraint.value.type.contains("List");
                 List<String> types = (List<String>) constraint.value.val;

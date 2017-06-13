@@ -55,7 +55,6 @@ public class Main {
         String url = "jdbc:mysql://localhost:3306/graphDB";
         String fileName = "large.csv";
 
-
         String username = "root";
         String password = "";
         System.out.println("Connecting to MySQL...");
@@ -73,14 +72,16 @@ public class Main {
         System.out.println("Creating index...");
         QueryIndexer queryIndexer = new QueryIndexer(connection);
         System.out.println("Index created...");
-//
-//        System.out.println("Parsing ANTLR query...");
-//        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));
-//        CypherParser parser = new CypherParser(new CommonTokenStream(lexer));
-//        CypherParser.CypherContext cypher = parser.cypher();
-//        CypherCustomVisitor visitor = new CypherCustomVisitor();
-//        visitor.setIndexer(queryIndexer);
-//        visitor.visit(cypher);
+
+        System.out.println("Parsing ANTLR query...");
+        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));
+        CypherParser parser = new CypherParser(new CommonTokenStream(lexer));
+        CypherParser.CypherContext cypher = parser.cypher();
+        CypherCustomVisitor visitor = new CypherCustomVisitor();
+        visitor.setIndexer(queryIndexer);
+        visitor.setConnection(connection);
+        visitor.visit(cypher);
+
 //            MyBufferedReader bufferedReader = new MyBufferedReader("src/small.csv");
 //            String line = "";
 //            while ((line = bufferedReader.readLine()) != null){

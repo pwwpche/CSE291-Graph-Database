@@ -28,7 +28,7 @@ public class Execution {
     }
 
     public int operandCount(){
-        return operandCount();
+        return operandCount;
     }
 
     public ResultTable execute() {

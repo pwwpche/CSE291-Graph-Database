@@ -23,6 +23,7 @@ public class ScanByLabelExec extends Execution {
         this.exeUtil.startRecording();
         ResultTable table = new ResultTable();
         List<String> labels = ((ScanByLabelPlan)plan).getLabels();
+        String var = plan.getVariable();
         Set<String> gids = new HashSet<>();
         boolean first = true;
         for(String label : labels){
@@ -33,7 +34,7 @@ public class ScanByLabelExec extends Execution {
             }
             gids.retainAll(exeUtil.getNodeByLabel(label));
         }
-        table.putAll(Execution.GID, new ArrayList<>(gids));
+        table.putAll(var, ResultTable.ObjectType.NODE, new ArrayList<>(gids));
         querySQL = exeUtil.getHistory();
         return table;
     }

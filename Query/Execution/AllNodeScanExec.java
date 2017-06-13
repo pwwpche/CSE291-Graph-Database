@@ -17,7 +17,7 @@ public class AllNodeScanExec extends Execution{
     public ResultTable execute() {
         this.exeUtil.startRecording();
         ResultTable table = new ResultTable();
-        table.putAll(plan.getVariable(), exeUtil.getAllNodes());
+        table.putAll(plan.getVariable(), ResultTable.ObjectType.NODE, exeUtil.getAllNodes());
         this.querySQL = this.exeUtil.getHistory();
         return table;
     }

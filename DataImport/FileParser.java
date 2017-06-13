@@ -352,6 +352,11 @@ public class FileParser {
                         "PRIMARY KEY (gid)\n" +
                         ");\n");
                 sqlSchema.add("CREATE INDEX idx_p_" + prop + "_gid ON P_" + prop + "(gid);\n");
+                if(prop.matches("[a-zA_Z]*id") || prop.matches("[a-zA-Z_]*name")){
+                    if(propertyToSQLType.get(prop).equals("TEXT")){
+                        sqlSchema.add("CREATE INDEX idx_p_" + prop + "_value ON P_" + prop + "(value(100));\n");
+                    }
+                }
             }
 
 
@@ -497,6 +502,8 @@ public class FileParser {
             handler.insertEdge(edgeObject);
         }
         handler.finish();
+
+
         System.out.println("Importing complete.");
 
     }
