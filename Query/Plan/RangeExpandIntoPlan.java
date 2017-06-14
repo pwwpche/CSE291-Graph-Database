@@ -15,9 +15,8 @@ import java.util.List;
  */
 public class RangeExpandIntoPlan extends Plan {
     private RelationEdge edge;
-    private QueryConstraints cons;
+    private QueryConstraints relationConstraint;
     private Pair<Integer, Integer> range;
-    private Integer cost;
 
     private List<String> getLabels(String variable, PlanTable table) {
 
@@ -38,27 +37,16 @@ public class RangeExpandIntoPlan extends Plan {
         return result;
     }
 
-    public RangeExpandIntoPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints constraints, PlanTable table) {
+    public RangeExpandIntoPlan(QueryIndexer queryIndexer, RelationEdge edge, QueryConstraints edgeConstraints, PlanTable table) {
         super(queryIndexer);
         this.edge = edge;
-        this.cons = constraints;
+        this.relationConstraint = edgeConstraints;
         this.estimatedSize = table.estimatedSize;
 
         List<String> labels1 = getLabels(edge.start, table);
         List<String> labels2 = getLabels(edge.end, table);
-        List<String> relations = new ArrayList<>();
-
-        for (Constraint constraint : constraints.getConstraints()) {
-            if (constraint.name.equals("rel_type")) {
-                assert constraint.value.type.contains("List");
-                List<String> types = (List<String>) constraint.value.val;
-                relations.addAll(types);
-            } else if (constraint.name.equals("range")) {
-                assert constraint.value.type.equals("Pair");
-                Pair<Integer, Integer> range = (Pair<Integer, Integer>) constraint.value.val;
-                this.range = range;
-            }
-        }
+        List<String> relations = edgeConstraints.getEdgeLabels();
+        this.range = edgeConstraints.getEdgeRange();
 
         // Size estimation for (a:A:B)-[r:R1|R2]->(b:D:E)
         Integer outgoingSize = 0, incomingSize = 0;
@@ -131,6 +119,18 @@ public class RangeExpandIntoPlan extends Plan {
 
     }
 
+    public QueryConstraints getRelationConstraint(){
+        return this.relationConstraint;
+    }
+
+    public Pair<Integer, Integer> getRange(){
+        return this.range;
+    }
+
+    public RelationEdge getRelationEdge(){
+        return this.edge;
+    }
+
     @Override
     public void applyTo(PlanTable table) {
         super.applyTo(table);
@@ -146,7 +146,7 @@ public class RangeExpandIntoPlan extends Plan {
 
     @Override
     public String getParams() {
-        return "-[" + edge.name + (cons.getConstraints().size() == 0 ? "" : ":" + cons.toString()) + "]-(" + edge.end + ")";
+        return "-[" + edge.name + (relationConstraint.getConstraints().size() == 0 ? "" : ":" + relationConstraint.toString()) + "]-(" + edge.end + ")";
     }
 
     @Override

@@ -40,16 +40,7 @@ public class ExpandIntoExec extends Execution {
         QueryConstraints constraints = ((ExpandIntoPlan)plan).getCons();
         RelationEdge edge = ((ExpandIntoPlan)plan).getRelationEdge();
 
-        List<String> relations = new ArrayList<>();
-
-        for(Constraint constraint : constraints.getConstraints()){
-            assert !constraint.name.contains("range");
-            if(constraint.name.equals("rel_type")){
-                assert constraint.value.type.contains("List");
-                List<String> types = (List<String>) constraint.value.val;
-                relations.addAll(types);
-            }
-        }
+        List<String> relations = constraints.getEdgeLabels();
 
         // First filter by relation rel_types
         Set<String> candidates = new HashSet<>();
@@ -144,7 +135,7 @@ public class ExpandIntoExec extends Execution {
         }
 
 
-        table.expandMultiKeyList(edge.start, edge.end, edge.name, ResultTable.ObjectType.RELATIONSHIP, valuesList);
+        table.expandIntoList(edge.start, edge.end, edge.name, ResultTable.ObjectType.RELATIONSHIP, valuesList);
         querySQL = exeUtil.getHistory();
         return table;
     }

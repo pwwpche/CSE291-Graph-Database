@@ -2,12 +2,8 @@ package DataImport;
 
 import Utility.DBUtil;
 
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.*;
-
-import static java.nio.charset.StandardCharsets.ISO_8859_1;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Created by liuche on 6/5/17.
@@ -110,7 +106,7 @@ public class DBHandler {
 
     public Map<Set<String>,String> getNodeLabelType()  throws SQLException {
         String statement = "SELECT * FROM typeLabel;";
-        Map<String, List<String>> res = util.getTableFromSQL(statement);
+        Map<String, List<String>> res = util.getMapTableFromSQL(statement);
         List<String> ids = res.get("id");
         List<String> labels = res.get("label");
 

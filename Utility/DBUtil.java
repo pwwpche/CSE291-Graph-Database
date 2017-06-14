@@ -186,7 +186,7 @@ public class DBUtil {
         return map;
     }
 
-    public Map<String, List<String>> getTableFromSQL(String statement) throws SQLException {
+    public Map<String, List<String>> getMapTableFromSQL(String statement) throws SQLException {
         if (recording) {
             executeHistory.add(statement);
         }
@@ -209,6 +209,27 @@ public class DBUtil {
         preparedStatement.close();
 
         return map;
+    }
+
+    public List<List<String>> getListTableFromSQL(String statement) throws SQLException {
+        if (recording) {
+            executeHistory.add(statement);
+        }
+        PreparedStatement preparedStatement = conn.prepareStatement(statement);
+        ResultSet result = preparedStatement.executeQuery();
+        List<List<String>> res = new ArrayList<>();
+        int lineSize = result.getMetaData().getColumnCount();
+        while(result.next()){
+            List<String> row = new ArrayList<>();
+            for(int i = 1 ; i <= lineSize ; i++){
+                row.add(result.getString(i));
+            }
+            res.add(row);
+        }
+        result.close();
+        preparedStatement.close();
+
+        return res;
     }
 
 

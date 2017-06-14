@@ -9,11 +9,15 @@ import java.util.*;
  *
  */
 public class ResultTable {
-    public enum  ObjectType {OBJECT, STRING, LIST, ID, NODE, RELATIONSHIP}
+    public enum  ObjectType {OBJECT, STRING, LIST, ID, NODE, RELATIONSHIP, EMPTY, PATH}
 
     private Map<String, Integer> keyToIdx = new HashMap<>();
     private Map<String, ObjectType> keyToType = new HashMap<>();
     private List<List<String>> table = new ArrayList<>();
+
+    //Range paths are represented by IDs in table.
+    private List<RangePath> rangePaths = new ArrayList<>();
+
     // Note that this is only used in the final step.
     // TODO: Generate them in the last step
     private List<List<Object>> finalResult = new ArrayList<>();
@@ -52,6 +56,7 @@ public class ResultTable {
         }
     }
 
+
     public void shrinkBySet(String key, Set<String> values){
         int index = keyToIdx.get(key);
         List<List<String>> newTable = new ArrayList<>();
@@ -86,45 +91,27 @@ public class ResultTable {
     }
 
 
+    public void expand(String startNode, List<String> endKeys,
+                       List<ObjectType> keyTypes,
+                       Map<String, List<List<String>>> values){
 
-//    public void expand(String fromKey, String toKey, ObjectType type, Map<String, List<String>> values){
-//        List<List<String> > newTable = new ArrayList<>();
-//        keyToType.put(toKey, type);
-//        keyToIdx.put(toKey, keyToIdx.size());
-//        for(List<String> row : table){
-//            String targetValue = row.get(keyToIdx.get(fromKey));
-//            if(values.containsKey(targetValue)){
-//                List<List<String>> newRows = new ArrayList<>();
-//                for(String val : values.get(targetValue)){
-//                    List<String> newRow = new ArrayList<>(row);
-//                    newRow.add(val);
-//                    newRows.add(newRow);
-//                }
-//                newTable.addAll(newRows);
-//            }
-//        }
-//        table = newTable;
-//    }
-
-    public void expand(String fromKey, List<String> toKey, List<ObjectType> keyTypes, Map<String, List<List<String>>> values){
-        // By default. expand by the first key.
         List<List<String> > newTable = new ArrayList<>();
         for(int i = 0, size = keyTypes.size() ; i < size ; i++){
-            String key = toKey.get(i);
+            String key = endKeys.get(i);
             ObjectType type = keyTypes.get(i);
             keyToIdx.put(key, keyToIdx.size());
             keyToType.put(key, type);
         }
-        Integer fromIndex = keyToIdx.get(fromKey);
+        Integer fromIndex = keyToIdx.get(startNode);
 
         for(List<String> row : table){
             String targetValue = row.get(fromIndex);
             if(values.containsKey(targetValue)){
                 List<List<String>> newRows = new ArrayList<>();
 
-                for(List<String> val : values.get(targetValue)){
+                for(List<String> newVals : values.get(targetValue)){
                     List<String> newRow = new ArrayList<>(row);
-                    newRow.addAll(val);
+                    newRow.addAll(newVals);
                     newRows.add(newRow);
                 }
                 newTable.addAll(newRows);
@@ -134,23 +121,39 @@ public class ResultTable {
     }
 
 
-
-    public void expandMultiKey(String fromKey1, String fromKey2, String toKey, Map<String, Map<String, String>> values){
+    public void expandPath(String startNode, String endNode, String relation,
+                           Map<String, List<RangePath>> newPaths){
         List<List<String>> newTable = new ArrayList<>();
-        keyToIdx.put(toKey, keyToIdx.size());
-        Integer fromIdx1 = keyToIdx.get(fromKey1), fromIdx2 = keyToIdx.get(fromKey2);
+        keyToIdx.put(relation, keyToIdx.size());
+        keyToIdx.put(endNode, keyToIdx.size());
+        keyToType.put(relation, ObjectType.PATH);
+        keyToType.put(endNode, ObjectType.NODE);
+        Integer fromIndex = keyToIdx.get(startNode);
         for(List<String> row : table){
-            String val1 = row.get(fromIdx1), val2 = row.get(fromIdx2);
-            if(values.containsKey(val1) && values.get(val1).containsKey(val2)){
-                String val = values.get(val1).get(val2);
-                row.add(val);
-                newTable.add(row);
+            String targetValue = row.get(fromIndex);
+            if(newPaths.containsKey(targetValue)){
+                List<List<String>> newRows = new ArrayList<>();
+
+                for(RangePath path: newPaths.get(targetValue)){
+                    String end = path.backNode();
+                    path.neighbors.remove(path.neighbors.size() - 1);
+                    String pathIdx = String.valueOf(newPaths.size());
+                    rangePaths.add(path);
+                    List<String> newRow = new ArrayList<>(row);
+                    newRow.add(pathIdx);
+                    newRow.add(end);
+                    newRows.add(newRow);
+                }
+                newTable.addAll(newRows);
             }
         }
-        table = newTable;
+        this.table = newTable;
     }
 
-    public void expandMultiKeyList(String fromKey1, String fromKey2, String toKey, ObjectType keyType, Map<String, Map<String, List<String>>> values){
+
+    public void expandIntoList(String fromKey1, String fromKey2,
+                               String toKey, ObjectType keyType,
+                               Map<String, Map<String, List<String>>> values){
         List<List<String>> newTable = new ArrayList<>();
         keyToIdx.put(toKey, keyToIdx.size());
         keyToType.put(toKey, keyType);
@@ -284,7 +287,6 @@ public class ResultTable {
             }
         }
         this.table = newTable;
-        return ;
     }
 
     public void cartesianJoin(ResultTable other){

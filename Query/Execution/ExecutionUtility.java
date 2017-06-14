@@ -115,48 +115,61 @@ public class ExecutionUtility {
             statement = statement.substring(0, statement.lastIndexOf("AND"));
         }
         statement += ";";
-        Map<String, List<String>> table = null;
-        try {
-            table = dbUtil.getTableFromSQL(statement);
-        } catch (SQLException e) {
+
+        try{
+            return dbUtil.getListTableFromSQL(statement);
+        }catch (SQLException e){
             e.printStackTrace();
             return null;
         }
-        List<List<String>> res = new ArrayList<>();
-        for (int i = 0, size = table.get(statItems.get(0)).size(); i < size; i++) {
-            List<String> row = new ArrayList<>();
-            for (String retItem : statItems) {
-                row.add(table.get(retItem).get(i));
+//        Map<String, List<String>> table = null;
+//        try {
+//            table = dbUtil.getMapTableFromSQL(statement);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//            return null;
+//        }
+//        List<List<String>> res = new ArrayList<>();
+//        for (int i = 0, size = table.get(statItems.get(0)).size(); i < size; i++) {
+//            List<String> row = new ArrayList<>();
+//            for (String retItem : statItems) {
+//                row.add(table.get(retItem).get(i));
+//            }
+//            res.add(row);
+//        }
+//        return res;
+    }
+
+    public List<List<String>> getEdgeEndByStart(String node1, List<String> relTypes) {
+        StringBuilder statement = new StringBuilder("SELECT eid, node2 FROM Edge WHERE node1 = \"" + node1 + "\"");
+        if (relTypes.size() > 0) {
+            statement.append(" AND (rel_type = ");
+            for (int i = 0; i < relTypes.size() - 1; i++) {
+                statement.append("\"").append(relTypes.get(i)).append("\" OR rel_type = ");
             }
-            res.add(row);
+            statement.append("\"").append(relTypes.get(relTypes.size() - 1)).append("\")");
         }
-        return res;
-    }
-
-    public List<String> getEdgeByStart(String node1) {
-        String statement = "SELECT eid FROM Edge WHERE node1 = \"" + node1 + "\";";
+        statement.append(";");
         try {
-            return dbUtil.getListFromSQL(statement);
+            return dbUtil.getListTableFromSQL(statement.toString());
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public List<String> getEdgeByEnd(String node1) {
-        String statement = "SELECT eid FROM Edge WHERE node2 = \"" + node1 + "\";";
-        try {
-            return dbUtil.getListFromSQL(statement);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return null;
+    public List<List<String>> getEdgeStartByEnd(String node2, List<String> relTypes) {
+        String statement = "SELECT eid, node1 FROM Edge WHERE node2 = \"" + node2 + "\"";
+        if (relTypes.size() > 0) {
+            statement += " AND (rel_type = ";
+            for (int i = 0; i < relTypes.size() - 1; i++) {
+                statement += "\"" + relTypes.get(i) + "\" OR rel_type = ";
+            }
+            statement += "\"" + relTypes.get(relTypes.size() - 1) + "\")";
         }
-    }
-
-    public List<String> getEdgesByLabel(String label) {
-        String statement = "SELECT eid FROM Edge WHERE rel_type = \"" + label + "\";";
+        statement += ";";
         try {
-            return dbUtil.getListFromSQL(statement);
+            return dbUtil.getListTableFromSQL(statement);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

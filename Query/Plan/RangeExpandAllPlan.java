@@ -30,36 +30,20 @@ public class RangeExpandAllPlan extends Plan {
         this.nodeConstraints = nodeCons;
         fromNode = table.nodes.contains(edge.start) ? edge.start : edge.end;
         toNode = table.nodes.contains(edge.start) ? edge.end : edge.start;
-//        this.edge.start = fromNode;
-//        this.edge.end = toNode;
 
         //TODO: NOT FINISHED YET.
-        List<String> usedLabels = new ArrayList<>();
-        List<String> usedRelations = new ArrayList<>();
+        List<String> startNodeLabel = new ArrayList<>();
+        List<String> usedRelations = edgeCons.getEdgeLabels();
+
         for( Plan plan : table.plans.toList()){
             if (plan instanceof ScanByLabelPlan) {
                 if(((ScanByLabelPlan) plan).variable.equals(fromNode)){
-                    usedLabels.addAll(((ScanByLabelPlan) plan).labels);
+                    startNodeLabel.addAll(((ScanByLabelPlan) plan).labels);
                 }
             }
         }
+        this.range = edgeCons.getEdgeRange();
 
-
-
-        for(Constraint constraint : edgeCons.getConstraints()){
-            if(constraint.name.equals("rel_type")){
-                assert constraint.value.type.contains("List");
-                List<String> types = (List<String>) constraint.value.val;
-                usedRelations.addAll(types);
-            }else if (constraint.name.equals("range")){
-                assert constraint.value.type.equals("Pair");
-                Pair<Integer, Integer> range = (Pair<Integer, Integer>) constraint.value.val;
-                this.range = range;
-            }
-            //TODO: Relation with string property is not implemented.
-        }
-
-        assert range.getV0() <= range.getV1();
         if(range.getV1() == 0){
             this.estimatedSize = table.estimatedSize;
             return ;
@@ -68,65 +52,53 @@ public class RangeExpandAllPlan extends Plan {
         for(int iteration = 1 ; iteration <= range.getV1() ; iteration++){
             if(iteration == 1){
                 // First iteration is the same as expandAll.
-                if(usedLabels.size() == 0 && usedRelations.size() == 0){
-                    int minExpand = indexer.getNumberOfNode() < indexer.getNumberOfRelations()
-                            ? indexer.getNumberOfNode()
-                            : indexer.getNumberOfRelations();
-                    this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
+                if(startNodeLabel.size() == 0 && usedRelations.size() == 0){
+                    this.estimatedSize = (int) (this.estimatedSize * 1.0 * indexer.getAvgEdgesOfNode());
                 }else{
-                    if (usedLabels.size() == 0 && usedRelations.size() == 0) {
-                        int minExpand = indexer.getNumberOfNode() < indexer.getNumberOfRelations()
-                                ? indexer.getNumberOfNode()
-                                : indexer.getNumberOfRelations();
+                    if (startNodeLabel.size() == 0) {
+                        double size = 0;
+                        for (String relationLabel : usedRelations) {
+                            size += indexer.getRelationsWithLabel(relationLabel);
+                        }
+                        double minExpand = indexer.getNumberOfNode() < size
+                                ? indexer.getNumberOfNode() : size;
                         this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
                     } else {
-                        if (usedLabels.size() == 0) {
-                            double size = 0;
-                            for (String relationLabel : usedRelations) {
-                                size += indexer.getRelationsWithLabel(relationLabel);
-                            }
-                            double minExpand = indexer.getNumberOfNode() < size
-                                    ? indexer.getNumberOfNode() : size;
-                            this.estimatedSize = (int) (this.estimatedSize * 1.0 * minExpand);
-                        } else {
 
-                            double minEdgesOfLabel = 0;
-                            for (String relation : usedRelations) {
-                                int cost = 0;
-                                int outgoingSize = Integer.MAX_VALUE, incomingSize = Integer.MAX_VALUE;
+                        double minEdgesOfLabel = 0;
+                        for (String relation : usedRelations) {
+                            int cost = 0;
+                            int outgoingSize = Integer.MAX_VALUE, incomingSize = Integer.MAX_VALUE;
 
-                                for (String nodeLabel : usedLabels) {
-                                    if (!edge.direction.equals("<--")) {
-                                        int edges = indexer.getOutingOfNodeRelation(nodeLabel, relation);
-                                        outgoingSize = outgoingSize < edges ? outgoingSize : edges;
-                                    }
-                                    if (!edge.direction.equals("-->")) {
-                                        int edges = indexer.getIncomingOfNodeRelation(nodeLabel, relation);
-                                        incomingSize = incomingSize < edges ? incomingSize : edges;
-                                    }
+                            for (String nodeLabel : startNodeLabel) {
+                                if (!edge.direction.equals("<--")) {
+                                    int edges = indexer.getOutingOfNodeRelation(nodeLabel, relation);
+                                    outgoingSize = outgoingSize < edges ? outgoingSize : edges;
                                 }
-                                switch (edge.direction) {
-                                    case "-->":
-                                        cost = outgoingSize;
-                                        break;
-                                    case "<--":
-                                        cost = incomingSize;
-                                        break;
-                                    case "<-->":
-                                        cost = (incomingSize < outgoingSize) ? incomingSize : outgoingSize;
-                                        break;
-                                    case "--":
-                                        cost = (incomingSize > outgoingSize) ? incomingSize : outgoingSize;
-                                        break;
-                                    default:
-                                        break;
+                                if (!edge.direction.equals("-->")) {
+                                    int edges = indexer.getIncomingOfNodeRelation(nodeLabel, relation);
+                                    incomingSize = incomingSize < edges ? incomingSize : edges;
                                 }
-                                minEdgesOfLabel += cost;
                             }
-                            this.estimatedSize = (int) (this.estimatedSize * 1.0 * minEdgesOfLabel);
+                            switch (edge.direction) {
+                                case "-->":
+                                    cost = outgoingSize;
+                                    break;
+                                case "<--":
+                                    cost = incomingSize;
+                                    break;
+                                case "<-->":case "--":
+                                    cost = (incomingSize < outgoingSize) ? incomingSize : outgoingSize;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            minEdgesOfLabel += cost;
                         }
+                        this.estimatedSize = (int) (this.estimatedSize * 1.0 * minEdgesOfLabel);
                     }
                 }
+
             }else{
                 //Starting table1 second iteration, only expand by relations.
                 double edges = 0;
@@ -139,12 +111,8 @@ public class RangeExpandAllPlan extends Plan {
         }
 
     }
-    public QueryConstraints getRelationConstraints(){
+    public QueryConstraints getRelationConstraint(){
         return relationConstraints;
-    }
-
-    public void setNodeConstraints(QueryConstraints cons){
-        this.nodeConstraints = cons;
     }
 
     public QueryConstraints getNodeConstraints(){
@@ -176,7 +144,15 @@ public class RangeExpandAllPlan extends Plan {
         return "RangeExpandAll";
     }
 
-    public String getExpandedNode(){
+    public RelationEdge getRelationEdge() {
+        return this.edge;
+    }
+
+    public String getExpandedNode() {
         return toNode;
+    }
+
+    public Pair<Integer, Integer> getRange(){
+        return range;
     }
 }

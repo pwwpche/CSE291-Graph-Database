@@ -46,9 +46,9 @@ public class QueryExecution {
             }else if(plan instanceof ExpandAllPlan){
                 executionList.add(new ExpandAllExec(dbUtil, plan));
             }else if(plan instanceof RangeExpandAllPlan){
-
+                executionList.add(new RangeExpandAllExec(dbUtil, plan));
             }else if(plan instanceof RangeExpandIntoPlan){
-
+                executionList.add(new RangeExpandIntoExec(dbUtil, plan));
             }else if(plan instanceof NodeHashJoinPlan){
                 executionList.add(new NodeHashJoinExec(dbUtil, plan));
             }else if(plan instanceof CartesianProductPlan){

@@ -32,29 +32,9 @@ public class ExpandAllExec extends Execution {
         String expandedNode = ((ExpandAllPlan)plan).getExpandedNode();
         String insideNode = edge.start.equals(expandedNode) ? edge.end : edge.start;
 
-        List<String> relationTypes = new ArrayList<>();
-        List<String> nodeLabels = new ArrayList<>();
-        Map<String, String> nodeProperties = new HashMap<>();
-
-        for(Constraint constraint : nodeConstraints.getConstraints()){
-            if(constraint.name.equals("nodeLabels")){
-                List<String> labels = (List<String>) constraint.value.val;
-                nodeLabels.addAll(labels);
-            }else{
-                String key = constraint.name;
-                String value = constraint.value.val.toString();
-                nodeProperties.put(key, value);
-            }
-        }
-
-        for(Constraint constraint : relationConstraints.getConstraints()){
-            if(constraint.name.equals("rel_type")){
-                assert constraint.value.type.contains("List");
-                List<String> types = (List<String>) constraint.value.val;
-                relationTypes.addAll(types);
-            }
-        }
-
+        List<String> relationTypes = relationConstraints.getEdgeLabels();
+        List<String> nodeLabels = nodeConstraints.getNodeLabels();
+        Map<String, String> nodeProperties = nodeConstraints.getNodeProperties();
 
 
         Set<String> startNodes = new HashSet<>(table.getAll(insideNode));

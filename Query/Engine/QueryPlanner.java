@@ -96,12 +96,13 @@ public class QueryPlanner {
                     default:
                         Value val = constraint.value;
                         //TODO: Add supply for other equality types.
-                        assert val.type.equals("String");
-                        assert constraint.equality.equals("==");
-                        String property = constraint.name;
-                        String value = (String) constraint.value.val;
-                        ScanByPropertyPlan scanByPropertyPlan = new ScanByPropertyPlan(indexer, node, property, value);
-                        scanByPropertyPlan.applyTo(table);
+                        assert val.isConstant && !val.type.equals("List");
+                        if(constraint.equality.equals("==")){
+                            String property = constraint.name;
+                            String value = constraint.value.val.toString();
+                            ScanByPropertyPlan scanByPropertyPlan = new ScanByPropertyPlan(indexer, node, property, value);
+                            scanByPropertyPlan.applyTo(table);
+                        }
                         break;
                 }
 
@@ -190,7 +191,8 @@ public class QueryPlanner {
     }
 
     private void removeRelated(Plan plan){
-        if(plan instanceof ExpandAllPlan || plan instanceof ExpandIntoPlan){
+        if(plan instanceof ExpandAllPlan || plan instanceof ExpandIntoPlan ||
+                plan instanceof RangeExpandAllPlan || plan instanceof RangeExpandIntoPlan){
             for(RelationEdge edge : edges){
                 if(plan instanceof ExpandAllPlan){
                     String name = ((ExpandAllPlan) plan).getRelationEdge().name;
@@ -199,9 +201,22 @@ public class QueryPlanner {
                         break;
                     }
                 }
-
                 if(plan instanceof ExpandIntoPlan){
                     String name = ((ExpandIntoPlan) plan).getRelationEdge().name;
+                    if(edge.name.equals(name)){
+                        edge.used = true;
+                        break;
+                    }
+                }
+                if(plan instanceof RangeExpandAllPlan){
+                    String name = ((RangeExpandAllPlan) plan).getRelationEdge().name;
+                    if(edge.name.equals(name)){
+                        edge.used = true;
+                        break;
+                    }
+                }
+                if(plan instanceof RangeExpandIntoPlan){
+                    String name = ((RangeExpandIntoPlan) plan).getRelationEdge().name;
                     if(edge.name.equals(name)){
                         edge.used = true;
                         break;
@@ -304,7 +319,7 @@ public class QueryPlanner {
             boolean hasRangeExpand = false;
             QueryConstraints edgeCons = varToConstraint.get(edge.name);
             for(Constraint constraint : edgeCons.getConstraints()){
-                if (constraint.value.type.contains("Range")){
+                if (constraint.name.equals("range")){
                     hasRangeExpand = true; break;
                 }
             }

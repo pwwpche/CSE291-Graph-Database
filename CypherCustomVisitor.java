@@ -37,6 +37,7 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
     public void setConnection(Connection conn){
         this.conn = conn;
     }
+
     void reset(){
         varToConstraint = new HashMap<>();
         anonNode = 0; anonRelation = 0;
@@ -212,9 +213,7 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         Value lastNode = this.visit(ctx.nodePattern());
         assert lastNode.type.equals("String");
 
-        Path path = new Path();
-        path.nodes.add((String) lastNode.val);
-
+        Path path = new Path((String) lastNode.val);
         for (int i = 0, size = ctx.patternElementChain().size(); i < size; i++) {
             Value val = this.visit(ctx.patternElementChain(i));
             assert val.type.equals("Pair");
@@ -812,9 +811,7 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         Value lastNode = this.visit(ctx.nodePattern());
         assert lastNode.type.equals("String");
 
-        Path path = new Path();
-        path.nodes.add((String) lastNode.val);
-
+        Path path = new Path((String) lastNode.val);
         for (int i = 0, size = ctx.patternElementChain().size(); i < size; i++) {
             Value val = this.visit(ctx.patternElementChain(i));
             assert val.type.equals("Pair");
