@@ -36,7 +36,7 @@ public class Main {
     public static void main(String[] args) throws IOException, SQLException {
 
         //Parsing this CSV file:
-        String url = "jdbc:mysql://localhost:3306/graphDB_updated";
+        String url = "jdbc:mysql://localhost:3306/test";
         String fileName = "large.csv";
 
         String username = "root";

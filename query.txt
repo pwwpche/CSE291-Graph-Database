@@ -1,2 +1,2 @@
-match (a)-[r]-(b) where a.id = b.id
-return a.id, b.id
+match (a)-[r]->(b), (c)-[r2]-(b),(a)--(c) where b.id = "8"
+ return a.id, r, b.name

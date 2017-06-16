@@ -1,0 +1,290 @@
+MySQL connected.
+Creating index...
+Index created...
+Parsing ANTLR query...
+Planning Query
+
+========================
+Generating Plan...
+ScanById|b|
+ExpandAll|b|-[r]-(a)
+ExpandAll|b|-[r2]-(c)
+FilterRelationEquality||r2 != r
+ExpandInto|a|-[anonRelation0]-(c)
+FilterRelationEquality||anonRelation0 != r AND anonRelation0 != r2
+ProduceResult|a,b|a:a.id b:b.name
+========================
+
+
+
+Query Plan generated. 
+Executing query...
+========================
+0	{node2Label=4, eid=2, node2=2, rel_type=HashTagUsedBy, node1Label=3, relationship=null, node1=1}	ThinkBIGSundayWithMarsha	
+0	{node2Label=4, eid=2, node2=2, rel_type=HashTagUsedBy, node1Label=3, relationship=null, node1=1}	ThinkBIGSundayWithMarsha	
+2	{node2Label=4, eid=276, node2=2, rel_type=HashTagUsedIn, node1Label=2, relationship=null, node1=261}	ThinkBIGSundayWithMarsha	
+2	{node2Label=4, eid=276, node2=2, rel_type=HashTagUsedIn, node1Label=2, relationship=null, node1=261}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+4	{node2Label=4, eid=29270, node2=2, rel_type=hashTagComenation, node1Label=4, relationship=null, node1=3}	ThinkBIGSundayWithMarsha	
+
+========================
+
+
+
+SQL: 
+========================
+SELECT gid FROM P_id WHERE value = "8";
+SELECT node1, eid FROM Edge WHERE node2 = "2" ;
+SELECT node1, eid FROM Edge WHERE node2 = "2" ;
+SELECT node2, eid FROM Edge WHERE node1 = "2" ;
+SELECT node2, eid FROM Edge WHERE node1 = "1" ;
+SELECT node2, eid FROM Edge WHERE node1 = "3" ;
+SELECT node2, eid FROM Edge WHERE node1 = "261" ;
+SELECT node1, eid FROM Edge WHERE node1 = "261" AND node2 = "1" ;
+SELECT node1, eid FROM Edge WHERE node1 = "261" AND node2 = "3" ;
+SELECT node1, eid FROM Edge WHERE node1 = "261" AND node2 = "261" ;
+SELECT value FROM P_id WHERE gid = "1";
+SELECT * FROM edge WHERE eid = "2";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "1";
+SELECT * FROM edge WHERE eid = "2";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "261";
+SELECT * FROM edge WHERE eid = "276";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "261";
+SELECT * FROM edge WHERE eid = "276";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+SELECT value FROM P_id WHERE gid = "3";
+SELECT * FROM edge WHERE eid = "29270";
+SELECT value FROM P_name WHERE gid = "2";
+========================
+
+
+
+
+Process finished with exit code 0
+
