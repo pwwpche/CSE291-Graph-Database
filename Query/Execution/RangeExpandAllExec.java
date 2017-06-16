@@ -1,5 +1,6 @@
 package Query.Execution;
 
+import Entity.Pair;
 import Entity.QueryConstraints;
 import Query.Entities.RelationEdge;
 import Query.Plan.Plan;
@@ -12,9 +13,12 @@ import java.util.*;
  * Created by liuche on 6/12/17.
  */
 public class RangeExpandAllExec extends Execution {
-    public RangeExpandAllExec(DBUtil util, Plan plan) {
+    private List<RangePath> pathMem;
+
+    public RangeExpandAllExec(DBUtil util, Plan plan, List<RangePath> pathMem) {
         super(util, plan);
         this.operandCount = 1;
+        this.pathMem = pathMem;
     }
 
     @Override
@@ -40,26 +44,29 @@ public class RangeExpandAllExec extends Execution {
         Integer rangeEnd = ((RangeExpandAllPlan)plan).getRange().getV1();
 
 
-        Map<String, List<RangePath>> resultPaths = new HashMap<>();
+        Map<String, List<Pair<String, String>>> resultPaths = new HashMap<>();
         Map<String, Queue<RangePath>> nodePaths = new HashMap<>();
-        for (String startNode : startNodes) {
-            Queue<RangePath> initPath = new LinkedList<>();
-            initPath.add(new RangePath(startNode));
-            nodePaths.put(startNode, initPath);
-            resultPaths.put(startNode, new ArrayList<>());
-        }
+
 
         // |a|-[r]->b   a<-[r]-|b|  :: getOutingEdge
         if(insideNode.equals(edge.start) && edgeDirection.contains("-->") ||
                 insideNode.equals(edge.end) && edgeDirection.contains("<--")
                 ){
+            for (String startNode : startNodes) {
+                Queue<RangePath> initPath = new LinkedList<>();
+                initPath.add(new RangePath(RangePath.Direction.FROM, startNode));
+                nodePaths.put(startNode, initPath);
+                resultPaths.put(startNode, new ArrayList<>());
+            }
             for(int i = 0 ; i <= rangeEnd ; i++){
                 if(i >= rangeStart && i <= rangeEnd){
                     for(String startNode : nodePaths.keySet()){
                         for(RangePath path : nodePaths.get(startNode)){
                             String endNode = path.backNode();
                             if(exeUtil.checkNode(endNode, nodeProperties, nodeLabels)){
-                                resultPaths.get(startNode).add(path);
+                                String pathIdx = String.valueOf(pathMem.size());
+                                pathMem.add(path);
+                                resultPaths.get(startNode).add(Pair.mkPair(endNode, pathIdx));
                             }
                         }
                     }
@@ -98,7 +105,7 @@ public class RangeExpandAllExec extends Execution {
             nodePaths = new HashMap<>();
             for (String startNode : startNodes) {
                 Queue<RangePath> initPath = new LinkedList<>();
-                initPath.add(new RangePath(startNode));
+                initPath.add(new RangePath(RangePath.Direction.TO, startNode));
                 nodePaths.put(startNode, initPath);
             }
 
@@ -108,7 +115,9 @@ public class RangeExpandAllExec extends Execution {
                         for(RangePath path : nodePaths.get(startNode)){
                             String endNode = path.backNode();
                             if(exeUtil.checkNode(endNode, nodeProperties, nodeLabels)){
-                                resultPaths.get(startNode).add(path);
+                                String pathIdx = String.valueOf(pathMem.size());
+                                pathMem.add(path);
+                                resultPaths.get(startNode).add(Pair.mkPair(endNode, pathIdx));
                             }
                         }
                     }

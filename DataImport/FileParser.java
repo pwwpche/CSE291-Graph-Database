@@ -91,7 +91,7 @@ public class FileParser {
         }
 
         // NOTICE:
-        // type of "rel_type" is STRING!!!
+        // type of "rel_type" is String!!!
         keyType.put("rel_type", "string");
 
         // Relation among columns
@@ -269,7 +269,7 @@ public class FileParser {
         return result;
     }
 
-    public void run() throws IOException, SQLException {
+    public void run(boolean createSchema) throws IOException, SQLException {
         System.out.println("Creating tables...");
         getMetadata();
         MyBufferedReader br = new MyBufferedReader(fileName);
@@ -279,7 +279,7 @@ public class FileParser {
         // Distinguish node property from edge property.
 
         String line;
-        if(true) {
+        if(createSchema) {
             // All relations are of type 0.
             // Typeid of nodes starts from 1.
             int typeId = 1;
@@ -369,7 +369,7 @@ public class FileParser {
 
             for (String key : typeToProperties.keySet()) {
                 String baseSql = "INSERT INTO typeProperty(id, name) VALUES (\""
-                        + key.toString() + "\", ";
+                        + key + "\", ";
                 for (String prop : typeToProperties.get(key)) {
                     String propSql = baseSql + "\"" + prop + "\");\n";
                     sqlSchema.add(propSql);
@@ -436,7 +436,6 @@ public class FileParser {
 
                 if (item.containsKey("id")) {
                     String id = item.get("id").toString();
-
                     if(item.containsKey("text")){
                         // For tweets, use BloomFilter to find if it check.
                         if(filter.contains(id)) {
@@ -453,6 +452,10 @@ public class FileParser {
                         item.put("text", value);
 
                         String gid = getUniqueGlobalId().toString();
+                        if(gid.equals("763")){
+                            System.out.println(763);
+                        }
+                        filter.add(id);
                         handler.insertObject(gid, item);
                         lineGidType.put(type, gid);
                         newGid.put(type, Integer.valueOf(gid));

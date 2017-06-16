@@ -10,13 +10,11 @@ import Query.Engine.QueryIndexer;
 import com.mysql.jdbc.jdbc2.optional.SuspendableXAConnection;
 import jdk.nashorn.internal.parser.JSONParser;
 import org.antlr.v4.runtime.ANTLRFileStream;
+import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 
 
 import java.sql.Connection;
@@ -36,40 +34,27 @@ import java.util.stream.StreamSupport;
 public class Main {
 
     public static void main(String[] args) throws IOException, SQLException {
-//        MyBufferedReader myBufferedReader = new MyBufferedReader("src/large.csv");
-//        String line;
-//        int count = 0;
-//        while((line = myBufferedReader.readLine()) != null){
-//            if(count % 10000 == 0){
-//                System.out.println(count);
-//            }
-//            count++;
-//            JSONObject object = new JSONObject(line);
-//            Map<String, Object> map = JsonParser.jsonToMap(object);
-//            if(map.containsKey("relationship") && !"".equals(map.get("relationship").toString())){
-//                System.out.println(line);
-//            }
-//        }
 
         //Parsing this CSV file:
-        String url = "jdbc:mysql://localhost:3306/graphDB";
+        String url = "jdbc:mysql://localhost:3306/graphDB_updated";
         String fileName = "large.csv";
 
         String username = "root";
         String password = "";
         System.out.println("Connecting to MySQL...");
         Connection connection = DriverManager.getConnection(url, username, password);
+        connection.setAutoCommit(false);
         System.out.println("MySQL connected.");
 
 
 //        System.out.println("Parsing file...");
 //        FileParser fileParser = new FileParser(fileName, connection);
-//        fileParser.run();
+//        fileParser.run(false);
 //        System.out.println("Parsing complete.");
 
 
         System.out.println("Creating index...");
-        QueryIndexer queryIndexer = new QueryIndexer(connection);
+        QueryIndexer queryIndexer = new QueryIndexer(connection, false );
         System.out.println("Index created...");
 
         System.out.println("Parsing ANTLR query...");
@@ -81,11 +66,36 @@ public class Main {
         visitor.setConnection(connection);
         visitor.visit(cypher);
 
-//            MyBufferedReader bufferedReader = new MyBufferedReader("src/small.csv");
-//            String line = "";
-//            while ((line = bufferedReader.readLine()) != null){
-//                System.out.println(line);
+
+//        while(true){
+//            try {
+//                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+//                StringBuilder query = new StringBuilder();
+//                System.out.println("Enter Query : ");
+//                System.out.println("use wq to finish input");
+//                while (true) {
+//
+//                    String input = br.readLine();
+//                    if ("wq".equals(input)) {
+//                        break;
+//                    }
+//                    query.append(input);
+//                }
+//                System.out.println("Query : \n" + query.toString());
+//                CypherLexer lexer = new CypherLexer(new ANTLRInputStream(query.toString()));
+//                CypherParser parser = new CypherParser(new CommonTokenStream(lexer));
+//                CypherParser.CypherContext cypher = parser.cypher();
+//                CypherCustomVisitor visitor = new CypherCustomVisitor();
+//                visitor.setIndexer(queryIndexer);
+//                visitor.setConnection(connection);
+//                visitor.visit(cypher);
+//
+//            } catch (Exception e) {
+//                e.printStackTrace();
 //            }
+//        }
+
+
     }
 
 }

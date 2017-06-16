@@ -18,6 +18,7 @@ public class Execution {
 
     protected List<String> querySQL = new ArrayList<>();
 
+
     public Execution(DBUtil util, Plan plan){
         this.exeUtil = new ExecutionUtility(util);
         this.plan = plan;

@@ -1,2 +1,2 @@
-match (a)-[r*1..4]-(b) where b.id = "4818134" AND a.friendcount = 321
-return a.id, r, b.id
+match (a)-[r]-(b) where a.id = b.id
+return a.id, b.id

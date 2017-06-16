@@ -65,9 +65,6 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         System.out.println("Executing query...");
         QueryExecution execution = new QueryExecution(new DBUtil(conn), bestPlan);
         ResultTable table = execution.execute();
-        System.out.println("Finished. ");
-
-        System.out.println("Query content: ");
         System.out.println("========================");
         System.out.println(table.toString());
         System.out.println("========================\n\n\n");
@@ -75,6 +72,8 @@ public class CypherCustomVisitor extends CypherBaseVisitor<Value> {
         System.out.println("========================");
         System.out.println(String.join("\n", execution.getUsedSQL()));
         System.out.println("========================\n\n\n");
+
+
     }
 
     @Override

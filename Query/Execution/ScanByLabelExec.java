@@ -34,7 +34,7 @@ public class ScanByLabelExec extends Execution {
             }
             gids.retainAll(exeUtil.getNodeByLabel(label));
         }
-        table.putAll(var, ResultTable.ObjectType.NODE, new ArrayList<>(gids));
+        table.putAll(var, ResultTable.ObjectType.Node_ID, new ArrayList<>(gids));
         querySQL = exeUtil.getHistory();
         return table;
     }

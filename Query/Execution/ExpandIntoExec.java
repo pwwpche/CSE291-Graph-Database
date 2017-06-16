@@ -1,6 +1,5 @@
 package Query.Execution;
 
-import Entity.Constraint;
 import Entity.QueryConstraints;
 import Query.Entities.RelationEdge;
 import Query.Plan.ExpandIntoPlan;
@@ -42,15 +41,66 @@ public class ExpandIntoExec extends Execution {
 
         List<String> relations = constraints.getEdgeLabels();
 
-        // First filter by relation rel_types
-        Set<String> candidates = new HashSet<>();
-        Set<String> startNodes = new HashSet<>(table.getAll(edge.start));
-        Set<String> endNodes = new HashSet<>(table.getAll(edge.end));
 
         // ValueList: {from -> {to -> [eid1, eid2, ..., eid_n]}}
         Map<String, Map<String, List<String>>> valuesList = new HashMap<>();
 
-        if(table.rows() < plan.getIndexer().getRelationsWithLabels(relations)){
+        if(table.rows() < 100){
+            List<String> startNodes = table.getAll(edge.start);
+            List<String> endNodes = table.getAll(edge.end);
+            List<String> retItems;
+
+            for(int i = 0, size = startNodes.size() ; i < size ; i++){
+                Map<String, String> constraint = new HashMap<>();
+                String startNode = startNodes.get(i), endNode = endNodes.get(i);
+                List<List<String>> res;
+                Map<String, List<String>> neighbors;
+                switch (edge.direction){
+                    case "-->": case "--" :case "<-->":
+
+                        constraint.put("from", startNode);
+                        constraint.put("to", endNode);
+
+                        retItems = new ArrayList<>(Arrays.asList("name"));
+                        res = exeUtil.getEdgesBy(retItems, constraint, relations);
+                        neighbors = new HashMap<>();
+                        for(List<String> row : res){
+                            String edgeEid = row.get(0);
+                            // Found a match
+                            addNode(startNode, endNode, edgeEid, valuesList);
+                        }
+                        if(!neighbors.isEmpty()){
+                            valuesList.put(startNode, neighbors);
+                        }
+                        if(edge.direction.equals("-->")){
+                            break;
+                        }
+
+                    case "<--" :
+                        constraint.put("from", endNode);
+                        constraint.put("to", startNode);
+
+                        retItems = new ArrayList<>(Arrays.asList("name"));
+
+                        res = exeUtil.getEdgesBy(retItems, constraint, relations);
+                        neighbors = new HashMap<>();
+                        for(List<String> row : res){
+                            String edgeEid = row.get(0);
+                            // Found a match
+                            addNode(startNode, endNode, edgeEid, valuesList);
+                        }
+                        if(!neighbors.isEmpty()){
+                            valuesList.put(startNode, neighbors);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+        if(table.rows() < 1000){
+            Set<String> startNodes = new HashSet<>(table.getAll(edge.start));
+            Set<String> endNodes = new HashSet<>(table.getAll(edge.end));
             List<String> retItems;
             Map<String, String> constraint = new HashMap<>();
 
@@ -101,6 +151,12 @@ public class ExpandIntoExec extends Execution {
             }
 
         }else{
+            // First filter by relation rel_types
+            Set<String> startNodes = new HashSet<>(table.getAll(edge.start));
+            Set<String> endNodes = new HashSet<>(table.getAll(edge.end));
+
+            List<String> candidates = exeUtil.getAllEdges();
+
             // Fetch all the edges that confront the constraints.
             candidates.addAll(exeUtil.getEdgesByLabel(relations));
 
@@ -135,7 +191,7 @@ public class ExpandIntoExec extends Execution {
         }
 
 
-        table.expandIntoList(edge.start, edge.end, edge.name, ResultTable.ObjectType.RELATIONSHIP, valuesList);
+        table.expandIntoList(edge.start, edge.end, edge.name, ResultTable.ObjectType.Edge_ID, valuesList);
         querySQL = exeUtil.getHistory();
         return table;
     }

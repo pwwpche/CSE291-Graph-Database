@@ -25,7 +25,7 @@ public class ScanByPropertyExec extends Execution {
         String prop = ((ScanByPropertyPlan)plan).getProperty();
         String val = ((ScanByPropertyPlan)plan).getValue();
         List<String> result = exeUtil.getNodeGidBy(prop, val);
-        table.putAll(plan.getVariable(), ResultTable.ObjectType.NODE, result);
+        table.putAll(plan.getVariable(), ResultTable.ObjectType.Node_ID, result);
         querySQL = exeUtil.getHistory();
         return table;
     }

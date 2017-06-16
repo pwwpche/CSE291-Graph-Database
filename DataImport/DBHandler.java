@@ -78,10 +78,13 @@ public class DBHandler {
         return true;
     }
 
-    public String getUniqueGidBy(String prop, String value) throws SQLException {
-
-        String sql = "SELECT gid FROM P_" + prop + " WHERE VALUE = \"" + value + "\";\n";
-        return util.getStringFromSQL(sql);
+    public String getUniqueGidBy(String prop, String value) {
+        try {
+            String sql = "SELECT gid FROM P_" + prop + " WHERE VALUE = \"" + value + "\";\n";
+            return util.getStringFromSQL(sql);
+        }catch (SQLException e){
+            return "";
+        }
     }
 
     public List<Integer> getGidBy(String property, String value) throws SQLException {

@@ -17,6 +17,7 @@ import java.util.Stack;
 public class QueryExecution {
     private DBUtil dbUtil;
     private PlanTree tree;
+    private List<RangePath> pathMem = new ArrayList<>();
 
     public List<String> getUsedSQL() {
         return usedSQL;
@@ -46,9 +47,9 @@ public class QueryExecution {
             }else if(plan instanceof ExpandAllPlan){
                 executionList.add(new ExpandAllExec(dbUtil, plan));
             }else if(plan instanceof RangeExpandAllPlan){
-                executionList.add(new RangeExpandAllExec(dbUtil, plan));
+                executionList.add(new RangeExpandAllExec(dbUtil, plan, pathMem));
             }else if(plan instanceof RangeExpandIntoPlan){
-                executionList.add(new RangeExpandIntoExec(dbUtil, plan));
+                executionList.add(new RangeExpandIntoExec(dbUtil, plan, pathMem));
             }else if(plan instanceof NodeHashJoinPlan){
                 executionList.add(new NodeHashJoinExec(dbUtil, plan));
             }else if(plan instanceof CartesianProductPlan){
@@ -58,7 +59,7 @@ public class QueryExecution {
             }else if(plan instanceof FilterRelationEqualityPlan){
                 executionList.add(new FilterRelationEqualityExec(dbUtil, plan));
             }else if(plan instanceof ProduceResultPlan) {
-                executionList.add(new ProduceResultExec(dbUtil, plan));
+                executionList.add(new ProduceResultExec(dbUtil, plan, pathMem));
             }
 
         }

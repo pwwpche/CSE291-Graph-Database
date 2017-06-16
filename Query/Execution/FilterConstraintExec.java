@@ -34,17 +34,48 @@ public class FilterConstraintExec extends Execution {
             Set<String> candidates = new HashSet<>(table1.getAll(varName));
             Set<String> chosen = new HashSet<>();
             for (String candidateNode : candidates) {
-                if(exeUtil.checkNode(candidateNode, properties, labels)){
-                    chosen.add(candidateNode);
+                switch (constraint.equality){
+                    case "==" :
+                        if(exeUtil.checkNode(candidateNode, properties, labels)){
+                            chosen.add(candidateNode);
+                        }
+                        break;
+                    case "!= ":
+                        if(!exeUtil.checkNode(candidateNode, properties, labels)){
+                            chosen.add(candidateNode);
+                        }
+                        break;
+                    case ">" :case "<":case ">=" :case "<=":
+                        String candidateVal = exeUtil.getPropertyByGid(constraint.name, candidateNode);
+                        String targetVal = constraint.value.val.toString();
+                        Double candidateNum = Double.valueOf(candidateVal), targetNum = Double.valueOf(targetVal);
+                        if(constraint.equality.equals(">") && candidateNum > targetNum){
+                            chosen.add(candidateNode);
+                        }
+                        if(constraint.equality.equals("<") && candidateNum < targetNum){
+                            chosen.add(candidateNode);
+                        }
+                        if(constraint.equality.equals(">=") && candidateNum >= targetNum){
+                            chosen.add(candidateNode);
+                        }
+                        if(constraint.equality.equals("<=") && candidateNum <= targetNum){
+                            chosen.add(candidateNode);
+                        }
+                        break;
+                    default:
+                        break;
                 }
+
             }
             table1.shrinkBySet(varName, chosen);
         }else{
+            //TODO: Support other equalities.
             Set<String> validNodes = new HashSet<>();
             if(labels.size() > 0){
                 validNodes.addAll(exeUtil.getNodeByLabel(labels));
             }else{
                 String field = constraint.name, value = constraint.value.val.toString();
+                List<String> candidates = exeUtil.getNodeGidBy(field, value);
                 validNodes.addAll(exeUtil.getNodeGidBy(field, value));
             }
             table1.shrinkBySet(varName, validNodes);

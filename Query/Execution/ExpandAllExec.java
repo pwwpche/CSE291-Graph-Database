@@ -1,13 +1,10 @@
 package Query.Execution;
 
-import Entity.Constraint;
 import Entity.QueryConstraints;
 import Query.Entities.RelationEdge;
 import Query.Plan.ExpandAllPlan;
-import Query.Plan.ExpandIntoPlan;
 import Query.Plan.Plan;
 import Utility.DBUtil;
-import com.sun.org.apache.regexp.internal.RE;
 
 import java.util.*;
 
@@ -99,7 +96,7 @@ public class ExpandAllExec extends Execution {
             }
         }
         retItems = new ArrayList<>(Arrays.asList(expandedNode, edge.name));
-        List<ResultTable.ObjectType> retTypes = new ArrayList<>(Arrays.asList(ResultTable.ObjectType.NODE, ResultTable.ObjectType.RELATIONSHIP));
+        List<ResultTable.ObjectType> retTypes = new ArrayList<>(Arrays.asList(ResultTable.ObjectType.Node_ID, ResultTable.ObjectType.Edge_ID));
         table.expand(insideNode, retItems, retTypes, outingEdges);
 
         this.querySQL = exeUtil.getHistory();

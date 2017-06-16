@@ -4,7 +4,6 @@ import Query.Plan.Plan;
 import Query.Plan.ScanByIdPlan;
 import Utility.DBUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,7 +22,7 @@ public class ScanByIdExec extends Execution {
         exeUtil.startRecording();
         ResultTable table = new ResultTable();
         List<String> gids = exeUtil.getNodeGidBy("id", ((ScanByIdPlan) plan).getId());
-        table.putAll(plan.getVariable(), ResultTable.ObjectType.NODE, gids);
+        table.putAll(plan.getVariable(), ResultTable.ObjectType.Node_ID, gids);
         querySQL = exeUtil.getHistory();
         return table;
     }

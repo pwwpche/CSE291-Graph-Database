@@ -2,11 +2,9 @@ package Query.Engine;
 
 import DataImport.JsonParser;
 import Utility.DBUtil;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.nio.Buffer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -84,12 +82,12 @@ public class QueryIndexer {
     }
 
 
-    public QueryIndexer(Connection conn) throws IOException, SQLException {
+    public QueryIndexer(Connection conn, boolean rewrite) throws IOException, SQLException {
         this.conn = conn;
         this.dbUtil = new DBUtil(conn);
 
         File indexerFile = new File("indexer.dat");
-        if(indexerFile.exists()){
+        if(indexerFile.exists() && !rewrite){
             load();
         }else{
             // Get number of nodes and relations
@@ -107,11 +105,11 @@ public class QueryIndexer {
 
             // Get number of nodes with same label
             statement = "select label, COUNT(*) from NodeLabel GROUP BY (label);";
-            labelNodes = dbUtil.getMapFromSQL(statement);
+            labelNodes = dbUtil.getMapIntFromSQL(statement);
 
             // Get number of relations with same label
             statement = "SELECT rel_type, COUNT(*) from Edge GROUP BY rel_type;";
-            labelRelation = dbUtil.getMapFromSQL(statement);
+            labelRelation = dbUtil.getMapIntFromSQL(statement);
 
             // Get number of distinct values of each property in nodes.
             statement = "SELECT DISTINCT(name) FROM typeProperty WHERE id > 0";
@@ -126,11 +124,11 @@ public class QueryIndexer {
 
             // Get number of edges that comes out of nodes with same label.
             statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.node1 = n.gid) GROUP BY (label);";
-            nodeLabelOutgoing = dbUtil.getMapFromSQL(statement);
+            nodeLabelOutgoing = dbUtil.getMapIntFromSQL(statement);
 
             // Get number of edges that goes into nodes with same label.
             statement = "SELECT label, COUNT(DISTINCT eid) from (Edge e LEFT JOIN NodeLabel n ON e.node2 = n.gid) GROUP BY (label);";
-            nodeLabelIncoming = dbUtil.getMapFromSQL(statement);
+            nodeLabelIncoming = dbUtil.getMapIntFromSQL(statement);
 
 
             for(String label : labelNodes.keySet()){

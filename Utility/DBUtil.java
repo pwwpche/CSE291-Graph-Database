@@ -35,9 +35,8 @@ public class DBUtil {
     private List<String> batchStat = new ArrayList<>();
 
     public void batchExecute(String statement) throws SQLException {
-        if (batchStat.size() < 1000) {
-            batchStat.add(statement);
-        } else {
+        batchStat.add(statement);
+        if(batchStat.size() > 1000){
             dumpBatch();
         }
     }
@@ -130,28 +129,33 @@ public class DBUtil {
         if (recording) {
             executeHistory.add(statement);
         }
-        List<String> resList = new ArrayList<>();
 
-        PreparedStatement preparedStatement = conn.prepareStatement(statement);
-        ResultSet result = preparedStatement.executeQuery();
+
+        Statement connStatement = conn.createStatement(
+                ResultSet.TYPE_FORWARD_ONLY, //or ResultSet.TYPE_FORWARD_ONLY
+                ResultSet.CONCUR_READ_ONLY);
+        ResultSet result = connStatement.executeQuery(statement);
+        List<String> resList = new ArrayList<>(result.getMetaData().getColumnCount());
         while (result.next()) {
             String str = result.getString(1);
             resList.add(str);
         }
         result.close();
-        preparedStatement.close();
+        connStatement.close();
 
         return resList;
     }
 
-    public Map<String, Integer> getMapFromSQL(String statement) throws SQLException {
+    public Map<String, Integer> getMapIntFromSQL(String statement) throws SQLException {
         if (recording) {
             executeHistory.add(statement);
         }
-        Map<String, Integer> resMap = new HashMap<>();
+
 
         PreparedStatement preparedStatement = conn.prepareStatement(statement);
         ResultSet result = preparedStatement.executeQuery();
+
+        Map<String, Integer> resMap = new HashMap<>(result.getMetaData().getColumnCount());
         while (result.next()) {
             String str = result.getString(1);
             Integer integer = result.getInt(2);
@@ -159,7 +163,27 @@ public class DBUtil {
         }
         result.close();
         preparedStatement.close();
+        return resMap;
+    }
 
+    public Map<String, String> getMapStringFromSQL(String statement) throws SQLException {
+        if (recording) {
+            executeHistory.add(statement);
+        }
+
+
+        Statement connStatement = conn.createStatement(
+                ResultSet.TYPE_FORWARD_ONLY, //or ResultSet.TYPE_FORWARD_ONLY
+                ResultSet.CONCUR_READ_ONLY);
+        ResultSet result = connStatement.executeQuery(statement);
+        Map<String, String> resMap = new HashMap<>(result.getMetaData().getColumnCount());
+        while (result.next()) {
+            String gid = result.getString(1);
+            String val = result.getString(2);
+            resMap.put(gid, val);
+        }
+        result.close();
+        connStatement.close();
         return resMap;
     }
 
@@ -169,8 +193,11 @@ public class DBUtil {
         }
         Map<String, String> map = new HashMap<>();
 
-        PreparedStatement preparedStatement = conn.prepareStatement(statement);
-        ResultSet result = preparedStatement.executeQuery();
+        Statement connStatement = conn.createStatement(
+                ResultSet.TYPE_FORWARD_ONLY, //or ResultSet.TYPE_FORWARD_ONLY
+                ResultSet.CONCUR_READ_ONLY);
+        ResultSet result = connStatement.executeQuery(statement);
+
         ResultSetMetaData metaData = result.getMetaData();
 
         if (result.next()) {
@@ -181,7 +208,7 @@ public class DBUtil {
             }
         }
         result.close();
-        preparedStatement.close();
+        connStatement.close();
 
         return map;
     }
@@ -192,8 +219,11 @@ public class DBUtil {
         }
         Map<String, List<String>> map = new HashMap<>();
 
-        PreparedStatement preparedStatement = conn.prepareStatement(statement);
-        ResultSet result = preparedStatement.executeQuery();
+        Statement connStatement = conn.createStatement(
+                ResultSet.TYPE_FORWARD_ONLY, //or ResultSet.TYPE_FORWARD_ONLY
+                ResultSet.CONCUR_READ_ONLY);
+        ResultSet result = connStatement.executeQuery(statement);
+
         ResultSetMetaData metaData = result.getMetaData();
         for (int i = 1, size = metaData.getColumnCount(); i <= size; i++) {
             String key = metaData.getColumnName(i);
@@ -206,7 +236,7 @@ public class DBUtil {
             }
         }
         result.close();
-        preparedStatement.close();
+        connStatement.close();
 
         return map;
     }
@@ -215,8 +245,10 @@ public class DBUtil {
         if (recording) {
             executeHistory.add(statement);
         }
-        PreparedStatement preparedStatement = conn.prepareStatement(statement);
-        ResultSet result = preparedStatement.executeQuery();
+        Statement connStatement = conn.createStatement(
+                ResultSet.TYPE_FORWARD_ONLY, //or ResultSet.TYPE_FORWARD_ONLY
+                ResultSet.CONCUR_READ_ONLY);
+        ResultSet result = connStatement.executeQuery(statement);
         List<List<String>> res = new ArrayList<>();
         int lineSize = result.getMetaData().getColumnCount();
         while(result.next()){
@@ -227,7 +259,7 @@ public class DBUtil {
             res.add(row);
         }
         result.close();
-        preparedStatement.close();
+        connStatement.close();
 
         return res;
     }

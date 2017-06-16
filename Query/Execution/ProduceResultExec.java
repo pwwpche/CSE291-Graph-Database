@@ -6,7 +6,6 @@ import Query.Plan.ProduceResultPlan;
 import Utility.DBUtil;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,9 +13,12 @@ import java.util.Map;
  * Created by liuche on 6/12/17.
  */
 public class ProduceResultExec extends Execution {
-    public ProduceResultExec(DBUtil util, Plan plan) {
+    private List<RangePath> pathMem;
+
+    public ProduceResultExec(DBUtil util, Plan plan, List<RangePath> pathMem) {
         super(util, plan);
         this.operandCount = 1;
+        this.pathMem = pathMem;
     }
 
     @Override
@@ -28,21 +30,23 @@ public class ProduceResultExec extends Execution {
         Map<String, Integer> mapping = table.getKeyIdxMap();
         Map<String, ResultTable.ObjectType> varTypes = table.getKeyToType();
 
-
+        List<String> finalVars = new ArrayList<>();
         List<List<Object>> finalResult = new ArrayList<>();
-        Map<String, ResultTable.ObjectType> objType = new HashMap<>();
+        List<ResultTable.ObjectType> finalType = new ArrayList<>();
 
         for(Pair<String, String> retPair : returnList){
             String var = retPair.getV0();
             String prop = retPair.getV1();
             if(var.equals("Constant")){
-                objType.put(var, ResultTable.ObjectType.STRING);
+                finalVars.add(prop);
+                finalType.add(ResultTable.ObjectType.Constant);
             }else{
-                if("".equals(prop)){
-                    objType.put(var, ResultTable.ObjectType.OBJECT);
+                if(!"".equals(prop)){
+                    finalVars.add(var + "." + prop);
+                    finalType.add(ResultTable.ObjectType.PropertyLookup);
                 }else{
-                    // Property Lookup
-                    objType.put(var, ResultTable.ObjectType.STRING);
+                    finalVars.add(var);
+                    finalType.add(varTypes.get(var));
                 }
             }
         }
@@ -53,25 +57,34 @@ public class ProduceResultExec extends Execution {
                 String var = retPair.getV0();
                 String prop = retPair.getV1();
                 if(var.equals("Constant")){
-                    resRow.add(var);
+                    resRow.add(prop);
                 }else{
                     Integer keyIdx = mapping.get(var);
                     String gid = row.get(keyIdx);
-                    if(varTypes.get(var).equals(ResultTable.ObjectType.NODE)){
-                        if("".equals(prop)){
-                            resRow.add(exeUtil.expandObject(gid));
-                        }else{
-                            // Property Lookup
-                            resRow.add(exeUtil.getPropertyByGid(prop, gid));
-                        }
-                    }else if(varTypes.get(var).equals(ResultTable.ObjectType.RELATIONSHIP)){
-                        resRow.add(exeUtil.expandEdge(gid));
+                    switch (varTypes.get(var)){
+                        case Node_ID:
+                            if("".equals(prop)){
+                                resRow.add(exeUtil.expandObject(gid));
+                            }else{
+                                // Property Lookup
+                                resRow.add(exeUtil.getPropertyByGid(prop, gid));
+                            }
+                            break;
+                        case Edge_ID:
+                            resRow.add(exeUtil.expandEdge(gid));
+                            break;
+                        case RangePath:
+                            resRow.add(pathMem.get(Integer.valueOf(gid)));
+                            break;
+                        default:
+                            break;
                     }
+
                 }
             }
             finalResult.add(resRow);
         }
-        table.setFinalResult(finalResult);
+        table.setFinals(finalVars, finalType, finalResult);
 
         this.querySQL = exeUtil.getHistory();
         return table;

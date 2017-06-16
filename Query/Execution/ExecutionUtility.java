@@ -248,6 +248,25 @@ public class ExecutionUtility {
         }
     }
 
+    public List<String> getPropertyByGids(String field, List<String> gids) {
+        if(gids.size() < 500){
+            List<String> result = new ArrayList<>();
+            gids.forEach(gid -> result.add(getPropertyByGid(field, gid)));
+            return result;
+        }
+
+        try {
+            String statement = "SELECT * FROM P_" + field + ";";
+            Map<String, String> propMap = dbUtil.getMapStringFromSQL(statement);
+            List<String> result = new ArrayList<>(gids.size());
+            gids.forEach(gid -> result.add(propMap.get(gid)));
+            return result;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public Map<String, String> expandObject(String gid) {
         try {
             String statement = "SELECT type FROM ObjectType WHERE gid = \"" + gid + "\";";
