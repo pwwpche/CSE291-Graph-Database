@@ -1,2 +1,3 @@
 match (a)-[r]->(b), (c)-[r2]-(b),(a)--(c) where b.id = "8"
- return a.id, r, b.name
+AND b.name = c.name AND a.id="29730"
+return a.id, r, b.name, c.id

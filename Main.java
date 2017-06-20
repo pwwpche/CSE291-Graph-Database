@@ -36,8 +36,8 @@ public class Main {
     public static void main(String[] args) throws IOException, SQLException {
 
         //Parsing this CSV file:
-        String url = "jdbc:mysql://localhost:3306/test";
-        String fileName = "large.csv";
+        String url = "jdbc:mysql://localhost:3306/graphDB";
+        String fileName = "data.csv";
 
         String username = "root";
         String password = "";
@@ -47,10 +47,10 @@ public class Main {
         System.out.println("MySQL connected.");
 
 
-//        System.out.println("Parsing file...");
-//        FileParser fileParser = new FileParser(fileName, connection);
-//        fileParser.run(false);
-//        System.out.println("Parsing complete.");
+        System.out.println("Parsing file...");
+        FileParser fileParser = new FileParser(fileName, connection);
+        fileParser.run(false);
+        System.out.println("Parsing complete.");
 
 
         System.out.println("Creating index...");
@@ -58,7 +58,7 @@ public class Main {
         System.out.println("Index created...");
 
         System.out.println("Parsing ANTLR query...");
-        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("/Users/liuche/IdeaProjects/GraphDatabase/src/query.txt"));
+        CypherLexer lexer = new CypherLexer(new ANTLRFileStream("query.txt"));
         CypherParser parser = new CypherParser(new CommonTokenStream(lexer));
         CypherParser.CypherContext cypher = parser.cypher();
         CypherCustomVisitor visitor = new CypherCustomVisitor();
